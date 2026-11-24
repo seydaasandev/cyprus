@@ -57,6 +57,26 @@ INSERT INTO `hotel_images` VALUES
 (5,9,'uploads/oteller/merit-royal-premium.jpg',0);
 /*!40000 ALTER TABLE `hotel_images` ENABLE KEYS */;
 UNLOCK TABLES;
+DROP TABLE IF EXISTS `hotel_rooms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `hotel_rooms` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `hotel_id` int(10) unsigned NOT NULL,
+  `name` varchar(190) NOT NULL,
+  `details` varchar(400) NOT NULL DEFAULT '',
+  `price` varchar(80) NOT NULL DEFAULT '',
+  `note` varchar(190) NOT NULL DEFAULT '',
+  `sort` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `hotel_id` (`hotel_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+LOCK TABLES `hotel_rooms` WRITE;
+/*!40000 ALTER TABLE `hotel_rooms` DISABLE KEYS */;
+/*!40000 ALTER TABLE `hotel_rooms` ENABLE KEYS */;
+UNLOCK TABLES;
 DROP TABLE IF EXISTS `hotels`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -89,7 +109,7 @@ LOCK TABLES `hotels` WRITE;
 /*!40000 ALTER TABLE `hotels` DISABLE KEYS */;
 INSERT INTO `hotels` VALUES
 (1,'limak-cyprus-deluxe-hotel-single','Limak Cyprus Deluxe Hotel',5,'Bafra, İskele / Northern Cyprus','Ultra All Inclusive (UAI)',5,'Location and Transportation: Located right on the beachfront in the Bafra region, the property is 40 km away from Famagusta.\nConcept: Ultra All Inclusive (UAI)- 5 stars\nBeach and Pools: In addition to its own 200-meter-long private sandy beach, the facility features indoor and outdoor swimming pools as well as an aquapark with 7 slides.','<p>Limak Cyprus Deluxe Hotel, Vokolidha\'da restoran, fitness merkezi, bar ve bahçe sunmaktadır. Bu 5 yıldızlı otel, 24 saat açık resepsiyon, oda servisi ve ücretsiz Wi-Fi sunmaktadır.</p>\n<p>Otelin tüm odaları elektrikli su ısıtıcısı ile donatılmıştır. Odalar klima ve düz ekran TV ile donatılmıştır ve Limak Cyprus Deluxe Hotel\'in bazı odalarında balkon vardır.</p>\n<p>Tesis, sauna ve teras içeren 5 yıldızlı konaklama birimleri sunmaktadır.</p>\n<p>En yakın havaalanı olan Ercan Uluslararası Havaalanı, Limak Cyprus Deluxe Hotel\'e 42 km uzaklıktadır.</p>',NULL,'uploads/2025/05/10-limak-deluxe-general-view-night-bafra.jpg','','',1,'','',3,1),
-(2,'salamis-hotel','Salamis Hotel',3,'Salamis, Famagusta / Northern Cyprus','Ultra All Inclusive (UAI)',5,'Location and Transportation: Situated right on the beachfront, just moments away from the historic Ancient City of Salamis.\nConcept: Ultra All Inclusive (UAI) – 5 stars\nBeach and Pools: Features a private fine-sand beach and a pier. The property includes indoor and outdoor swimming pools, children\'s pools, and an aquapark operating during the summer season.\nFood and Beverage: Operating under the Ultra All Inclusive concept, the hotel offers a total of 12 restaurants and bars. Alongside the main buffet restaurant, a\'la carte restaurants specializing in Chinese, Italian, and Turkish cuisines are available.\nSPA, Casino, and Event Spaces: Houses the Lemon Spa & Wellness center (featuring a Turkish bath, sauna, massage services, and a fitness center), a casino open to guests aged 25 and over, and 9 meeting/event halls.','<p>Salamis Hotel, Kuzey Kıbrıs’ın Gazimağusa bölgesinde denize sıfır konumuyla konforlu bir tatil deneyimi sunan lüks bir tesistir. Modern odaları, geniş plajı, açık ve kapalı yüzme havuzları, spa merkezi ve casino hizmetiyle hem dinlenmek hem de eğlenmek isteyen misafirler için idealdir. Salamis Bay bölgesinin doğal güzellikleriyle çevrili otel, misafirlerine kaliteli hizmet ve huzurlu bir atmosfer vaat eder.</p>',NULL,'uploads/2025/10/362657917.jpg','','',1,'','',4,1),
+(2,'salamis-hotel','Salamis Hotel',3,'Salamis, Famagusta / Northern Cyprus','Ultra All Inclusive (UAI)',5,'Location and Transportation: Situated right on the beachfront, just moments away from the historic Ancient City of Salamis.\nConcept: Ultra All Inclusive (UAI) – 5 stars\nBeach and Pools: Features a private fine-sand beach and a pier. The property includes indoor and outdoor swimming pools, children\'s pools, and an aquapark operating during the summer season.\nFood and Beverage: Operating under the Ultra All Inclusive concept, the hotel offers a total of 12 restaurants and bars. Alongside the main buffet restaurant, a\'la carte restaurants specializing in Chinese, Italian, and Turkish cuisines are available.\nSPA, Casino, and Event Spaces: Houses the Lemon Spa & Wellness center (featuring a Turkish bath, sauna, massage services, and a fitness center), a casino open to guests aged 25 and over, and 9 meeting/event halls.','<p>Salamis Hotel, Kuzey Kıbrıs’ın Gazimağusa bölgesinde denize sıfır konumuyla konforlu bir tatil deneyimi sunan lüks bir tesistir. Modern odaları, geniş plajı, açık ve kapalı yüzme havuzları, spa merkezi ve casino hizmetiyle hem dinlenmek hem de eğlenmek isteyen misafirler için idealdir. Salamis Bay bölgesinin doğal güzellikleriyle çevrili otel, misafirlerine kaliteli hizmet ve huzurlu bir atmosfer vaat eder.</p>','','uploads/2025/10/362657917.jpg','','',1,'','',4,1),
 (3,'elexus-hotel','Elexus Hotel',2,'Çatalköy, Kyrenia / Northern Cyprus','Ultra All Inclusive (UAI)',5,'Location: Çatalköy, Kyrenia / Northern Cyprus\nConcept: Ultra All Inclusive (UAI)- 5 stars\nFeatured Amenities: It features a private sandy beach, an adults-only Miami-style beach club, 4 outdoor swimming pools, 2 heated indoor pools, an infinity pool, a massive 6,000 m² aqua park, and a 600-meter electric go-kart track.','',NULL,'uploads/2025/10/elexus-hotel-resort-casino-301915-e1641631786666.jpg','','',1,'','',2,1),
 (4,'concorde-aria-hotel-casino','Concorde Aria Hotel & Casino',2,'Çatalköy, Kyrenia / Northern Cyprus','Ultra All Inclusive (UAI)',5,'Location: Çatalköy, Kyrenia / Northern Cyprus\nConcept: Ultra All Inclusive (UAI)- 5 stars\nFeatured Amenities: Casino, SPA & wellness center, indoor swimming pool, à la carte restaurants, and a kids\' club','','','uploads/2026/11/resim1-720x475.jpg','','',1,'','',1,1),
 (5,'lords-palace-lagoon-hotel','Lords Palace Lagoon Hotel',2,'Ozanköy, Kyrenia / Northern Cyprus','FB+',5,'Location and Transportation: Situated right on the beachfront in the Ozanköy area of Kyrenia.\nConcept: FB+ ( 5 stars)\nBeach and Pools: Featuring its own private sandy beach and a pier, the hotel offers expansive outdoor lagoon pools, a heated indoor pool, and children\'s pools.\nFood, Beverage, and Entertainment: Alongside the main buffet restaurant, 2 a\'la carte restaurants and various bars are available. The property also houses a casino, a spacious SPA & wellness center, a fitness center, and a kids\' club.','',NULL,'uploads/2026/11/resim2-720x475.jpg','','',1,'','',5,1),
@@ -121,7 +141,7 @@ CREATE TABLE `items` (
   `active` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `grp` (`grp`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `items` WRITE;
@@ -410,6 +430,7 @@ INSERT INTO `settings` VALUES
 ('radius','16'),
 ('regions_text','Kıbrıs rüyanızı gerçekleştirebileceğiniz bölgeler…'),
 ('request_text','Kuzey Kıbrıs tatilinizi planlarken hayallerinize ortak olup bütçenize en uygun tatili birlikte organize edelim.'),
+('schema_version','2'),
 ('section_space','110'),
 ('services_text','Hayalinizdeki seyehat planını Cyprus Touristic ile planlayın, rüyalarınızı yaşayın.'),
 ('site_name','Cyprus Touristic'),
@@ -500,7 +521,7 @@ CREATE TABLE `login_attempts` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `ip_time` (`ip`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -520,9 +541,14 @@ CREATE TABLE `messages` (
   `ip` varchar(45) NOT NULL DEFAULT '',
   `is_read` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `room` varchar(255) NOT NULL DEFAULT '',
+  `checkin` date DEFAULT NULL,
+  `checkout` date DEFAULT NULL,
+  `adults` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `children` tinyint(3) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `created_at` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

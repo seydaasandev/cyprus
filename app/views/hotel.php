@@ -3,6 +3,8 @@
 $features = lines($hotel['features']);
 $images = array_values(array_filter(array_merge([$hotel['image']], array_column($gallery, 'image'))));
 $requestUrl = url('talep-formu') . '?otel=' . rawurlencode($hotel['name']);
+$reserveUrl = url('rezervasyon') . '?otel=' . rawurlencode($hotel['slug']);
+$bookLabel = setting('label_book', 'Rezervasyon Yap');
 ?>
 <?= page_hero($hotel['name'], $hotel['concept'] ?: setting('hotels_title', 'Rezervasyon Yap'), $hotel['image'], [[setting('hotels_title', 'Rezervasyon Yap'), 'oteller'], [$hotel['name'], '']], $hotel['location']) ?>
 <section class="sec sec--light hotel">
@@ -31,6 +33,31 @@ $requestUrl = url('talep-formu') . '?otel=' . rawurlencode($hotel['name']);
       </div>
       <?php endif; ?>
 
+      <?php if ($rooms): ?>
+      <div class="rooms" id="odalar" data-reveal>
+        <h2><?= e(setting('label_rooms', 'Oda Seçenekleri ve Fiyatlar')) ?></h2>
+        <ul class="rooms__list">
+          <?php foreach ($rooms as $room): ?>
+          <li class="room">
+            <span class="room__icon"><?= icon('bed', 22) ?></span>
+            <div class="room__info">
+              <h3><?= e($room['name']) ?></h3>
+              <?php if ($room['details'] !== ''): ?><p><?= e($room['details']) ?></p><?php endif; ?>
+            </div>
+            <?php if ($room['price'] !== '' || $room['note'] !== ''): ?>
+            <div class="room__price">
+              <?php if ($room['price'] !== ''): ?><strong><?= e($room['price']) ?></strong><?php endif; ?>
+              <?php if ($room['note'] !== ''): ?><small><?= e($room['note']) ?></small><?php endif; ?>
+            </div>
+            <?php endif; ?>
+            <a class="btn btn--primary btn--sm" href="<?= e($reserveUrl . '&oda=' . (int) $room['id']) ?>"><span><?= e($bookLabel) ?></span><?= icon('arrow-right', 16) ?></a>
+          </li>
+          <?php endforeach; ?>
+        </ul>
+        <?php if (setting('rooms_note') !== ''): ?><p class="rooms__note"><?= nl2br(e(setting('rooms_note'))) ?></p><?php endif; ?>
+      </div>
+      <?php endif; ?>
+
       <?php if (trim(strip_tags((string) $hotel['description'])) !== ''): ?>
       <div class="prose" data-reveal><?= content_html($hotel['description']) ?></div>
       <?php endif; ?>
@@ -52,7 +79,8 @@ $requestUrl = url('talep-formu') . '?otel=' . rawurlencode($hotel['name']);
           <?php if ($hotel['concept'] !== ''): ?><li><?= icon('utensils', 18) ?><span><small><?= e(setting('label_concept', 'Konsept')) ?></small><?= e($hotel['concept']) ?></span></li><?php endif; ?>
           <?php if (!empty($hotel['region'])): ?><li><?= icon('compass', 18) ?><span><small><?= e(setting('label_region', 'Bölge')) ?></small><a href="<?= e(url($hotel['region_slug'])) ?>"><?= e($hotel['region']) ?></a></span></li><?php endif; ?>
         </ul>
-        <a class="btn btn--primary btn--block" href="<?= e($requestUrl) ?>"><span><?= e(setting('label_request', 'Talep Gönder')) ?></span><?= icon('send', 17) ?></a>
+        <a class="btn btn--primary btn--block" href="<?= e($rooms ? '#odalar' : $reserveUrl) ?>"><span><?= e($bookLabel) ?></span><?= icon('calendar', 17) ?></a>
+        <a class="btn btn--outline btn--block" href="<?= e($requestUrl) ?>"><?= icon('send', 17) ?><span><?= e(setting('label_request', 'Talep Gönder')) ?></span></a>
         <?php foreach ($sheets as $sh): ?>
         <a class="btn btn--outline btn--block" href="<?= e(url($sh['slug'])) ?>"><?= icon('file', 17) ?><span><?= e($sh['title']) ?></span></a>
         <?php endforeach; ?>

@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 /** Tek parçalı adreslerde (site.com/slug) çakışmaması gereken tablolar ve ayrılmış yollar. */
 const SLUG_SHARED_TABLES = ['services', 'regions', 'factsheets', 'pages'];
-const SLUG_RESERVED = ['admin', 'app', 'assets', 'uploads', 'oteller', 'hizmetlerimiz', 'kuzey-kibris', 'hotel-factsheets', 'iletisim', 'talep-formu', 'urun', 'sitemap.xml', 'robots.txt', 'index.php'];
+const SLUG_RESERVED = ['admin', 'app', 'assets', 'uploads', 'oteller', 'hizmetlerimiz', 'kuzey-kibris', 'hotel-factsheets', 'iletisim', 'talep-formu', 'rezervasyon', 'urun', 'sitemap.xml', 'robots.txt', 'index.php'];
 
 /** @return array{0: string, 1: array} */
 function crud_entity(): array

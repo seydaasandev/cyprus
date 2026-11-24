@@ -42,8 +42,8 @@ admin_header('Özet');
       <li class="<?= (int) $m['is_read'] === 0 ? 'is-unread' : '' ?>">
         <a href="<?= e(admin_url('messages', ['id' => $m['id']])) ?>">
           <strong><?= e(trim($m['name'] . ' ' . $m['surname'])) ?></strong>
-          <span class="adm-tag"><?= $m['kind'] === 'talep' ? 'Talep' : 'İletişim' ?></span>
-          <em><?= e(excerpt($m['message'] ?: $m['subject'] ?: $m['hotel'], 70)) ?></em>
+          <span class="adm-tag<?= $m['kind'] === 'rezervasyon' ? ' adm-tag--accent' : '' ?>"><?= e(['talep' => 'Talep', 'rezervasyon' => 'Rezervasyon'][$m['kind']] ?? 'İletişim') ?></span>
+          <em><?= e(excerpt(trim($m['hotel'] . ' ' . $m['room']) ?: ($m['message'] ?: $m['subject']), 70)) ?></em>
           <time><?= e(date('d.m.Y H:i', strtotime($m['created_at']))) ?></time>
         </a>
       </li>

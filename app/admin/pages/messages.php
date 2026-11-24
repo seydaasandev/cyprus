@@ -2,6 +2,11 @@
 /** İletişim ve talep formundan gelen mesajlar. */
 const MESSAGES_PER_PAGE = 25;
 
+function message_kind_label(string $kind): string
+{
+    return ['talep' => 'Talep', 'rezervasyon' => 'Rezervasyon', 'iletisim' => 'İletişim'][$kind] ?? 'İletişim';
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     admin_require_post();
     $id = (int) ($_POST['id'] ?? 0);
@@ -28,7 +33,11 @@ if ($id > 0) {
     }
     q('UPDATE messages SET is_read = 1 WHERE id = ?', [$id]);
     admin_header('Mesaj', [admin_btn('Mesajlara dön', admin_url('messages'), 'arrow-left', 'adm-btn--ghost')]);
-    $rowsOut = ['Tür' => $m['kind'] === 'talep' ? 'Talep Formu' : 'İletişim Formu', 'Ad Soyad' => trim($m['name'] . ' ' . $m['surname']), 'Firma' => $m['company'], 'Ülke' => $m['country'], 'Konu' => $m['subject'], 'Otel' => $m['hotel'], 'Tarih' => date('d.m.Y H:i', strtotime($m['created_at'])), 'IP' => $m['ip']];
+    $fmtDate = static fn(?string $d): string => $d ? date('d.m.Y', strtotime($d)) : '';
+    $nights = ($m['checkin'] && $m['checkout']) ? (int) ((strtotime($m['checkout']) - strtotime($m['checkin'])) / 86400) : 0;
+    $rowsOut = ['Tür' => message_kind_label($m['kind']) . ' Formu', 'Ad Soyad' => trim($m['name'] . ' ' . $m['surname']), 'Firma' => $m['company'], 'Ülke' => $m['country'], 'Konu' => $m['subject'], 'Otel' => $m['hotel'], 'Oda' => $m['room'],
+        'Giriş tarihi' => $fmtDate($m['checkin']), 'Çıkış tarihi' => $fmtDate($m['checkout']) . ($nights > 0 ? ' (' . $nights . ' gece)' : ''),
+        'Kişi sayısı' => $m['kind'] === 'rezervasyon' ? ((int) $m['adults'] . ' yetişkin' . ((int) $m['children'] > 0 ? ', ' . (int) $m['children'] . ' çocuk' : '')) : '', 'Tarih' => date('d.m.Y H:i', strtotime($m['created_at'])), 'IP' => $m['ip']];
     ?>
     <section class="adm-card">
       <dl class="adm-dl">
@@ -66,8 +75,8 @@ admin_header('Mesajlar');
       <?php foreach ($list as $m): ?>
       <tr class="<?= (int) $m['is_read'] === 0 ? 'is-unread' : '' ?>">
         <td data-label="Gönderen"><a class="adm-rowtitle" href="<?= e(admin_url('messages', ['id' => $m['id']])) ?>"><?= e(trim($m['name'] . ' ' . $m['surname'])) ?></a><br><small><?= e($m['email']) ?></small></td>
-        <td data-label="Tür"><span class="adm-tag"><?= $m['kind'] === 'talep' ? 'Talep' : 'İletişim' ?></span></td>
-        <td data-label="Özet"><?= e(excerpt(trim($m['hotel'] . ' ' . $m['subject'] . ' ' . $m['message']), 90)) ?></td>
+        <td data-label="Tür"><span class="adm-tag<?= $m['kind'] === 'rezervasyon' ? ' adm-tag--accent' : '' ?>"><?= e(message_kind_label($m['kind'])) ?></span></td>
+        <td data-label="Özet"><?= e(excerpt(trim($m['hotel'] . ' ' . $m['room'] . ' ' . ($m['checkin'] ? date('d.m.Y', strtotime($m['checkin'])) . '–' . date('d.m.Y', strtotime((string) $m['checkout'])) : '') . ' ' . $m['subject'] . ' ' . $m['message']), 110)) ?></td>
         <td data-label="Tarih"><?= e(date('d.m.Y H:i', strtotime($m['created_at']))) ?></td>
         <td class="adm-col-act">
           <a class="adm-icon-btn" href="<?= e(admin_url('messages', ['id' => $m['id']])) ?>" title="Oku"><?= icon('eye', 17) ?></a>

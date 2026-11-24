@@ -52,7 +52,7 @@ Eski ürün adresleri (`/urun/otel-adi`) yeni otel sayfalarına kalıcı olarak 
 | --- | --- |
 | Slider / Video | Anasayfa üstündeki video ve görsel slaytlar, metinler, düğmeler, karartma, sıra |
 | Bölümler ve Sıralama | Anasayfa bölümlerinin sırası (sürükle-bırak), görünürlüğü, başlıkları, arka plan stili, otel ızgarası / şerit seçimi |
-| Oteller | Otel bilgileri, görsel ve galeri, bölge, konsept, sıra (sürükle-bırak), yayında anahtarı |
+| Oteller | Otel bilgileri, görsel ve galeri, bölge, konsept, **oda seçenekleri ve fiyatları**, sıra (sürükle-bırak), yayında anahtarı |
 | Hizmetler, Bölgeler, Sayfalar, Hotel Factsheets | Zengin metin düzenleyicili içerikler, görseller, PDF'ler, SEO alanları |
 | Sayaçlar, Garanti Ediyoruz, Öz Değerlerimiz, Hizmet Listesi, Talep Adımları | Kısa liste öğeleri ve simgeleri |
 | Menüler | Üst menü (açılır alt menülerle) ve iki alt menü sütunu |
@@ -62,6 +62,17 @@ Eski ürün adresleri (`/urun/otel-adi`) yeni otel sayfalarına kalıcı olarak 
 | Sayfa Metinleri, Alt Bilgi, SEO ve Kodlar, Dil / Çeviri | Sabit başlıklar, alt bilgi, meta bilgiler, analiz kodları, dil seçici |
 | Mesajlar | İletişim ve talep formundan gelen başvurular |
 | Medya Kütüphanesi | Görsel, video ve PDF yükleme / silme |
+
+## Rezervasyon talebi
+
+- Her otelin düzenleme ekranında **Oda seçenekleri ve fiyatlar** bölümü vardır (oda adı, fiyat, fiyat notu, açıklama; sürükleyerek sıralanır).
+- Otel sayfasında her odanın yanında **Rezervasyon Yap** düğmesi çıkar; ziyaretçi `/rezervasyon` formunda tarih, kişi sayısı ve iletişim bilgilerini doldurur.
+- Talep, *İletişim ve Sosyal > Form bildirimleri* altındaki rezervasyon e-posta adresine gönderilir ve paneldeki **Mesajlar** bölümüne kaydedilir. Çevrimiçi ödeme yoktur.
+
+## Güncelleme
+
+Kod `git` ile güncellendiğinde gereken veritabanı değişiklikleri (yeni tablo ve sütunlar) sitenin ilk açılışında
+kendiliğinden uygulanır (`app/bootstrap.php` içindeki `run_migrations()`); elle SQL çalıştırmak gerekmez.
 
 ## Güvenlik notları
 

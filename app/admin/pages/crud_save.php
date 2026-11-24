@@ -4,6 +4,7 @@ require_once __DIR__ . '/_crud.php';
 
 const PASSWORD_MIN_LENGTH = 10;
 const GALLERY_MAX_IMAGES = 60;
+const ROOMS_MAX = 40;
 
 admin_require_post();
 [$key, $def] = crud_entity();
@@ -79,7 +80,26 @@ if (!empty($def['gallery'])) {
     }
 }
 
+$roomRows = [];
+if (!empty($def['rooms'])) {
+    $text = static fn($v, int $max): string => mb_substr(trim(preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $v)), 0, $max);
+    $names = array_slice((array) ($_POST['room_name'] ?? []), 0, ROOMS_MAX);
+    foreach ($names as $i => $name) {
+        $name = $text($name, 190);
+        if ($name === '') {
+            continue;
+        }
+        $roomRows[] = [
+            'name' => $name,
+            'details' => $text($_POST['room_details'][$i] ?? '', 400),
+            'price' => $text($_POST['room_price'][$i] ?? '', 80),
+            'note' => $text($_POST['room_note'][$i] ?? '', 190),
+        ];
+    }
+}
+
 if ($errors) {
+    $formRooms = $roomRows;
     $formValues = array_merge($record ?? [], $shown);
     $formErrors = $errors;
     $formGallery = $gallery;
@@ -108,6 +128,21 @@ if (!empty($def['gallery'])) {
     q('DELETE FROM ' . $g['table'] . ' WHERE ' . $g['fk'] . ' = ?', [$id]);
     foreach ($gallery as $i => $img) {
         q('INSERT INTO ' . $g['table'] . ' (' . $g['fk'] . ', image, sort) VALUES (?, ?, ?)', [$id, $img, $i]);
+    }
+}
+
+if (!empty($def['rooms'])) {
+    // Var olan satırları yerinde güncelle ki ziyaretçilerin elindeki "oda" bağlantıları geçerli kalsın.
+    $existing = array_column(rows('SELECT id FROM hotel_rooms WHERE hotel_id = ? ORDER BY sort, id', [$id]), 'id');
+    foreach ($roomRows as $i => $r) {
+        if (isset($existing[$i])) {
+            q('UPDATE hotel_rooms SET name = ?, details = ?, price = ?, note = ?, sort = ? WHERE id = ?', [$r['name'], $r['details'], $r['price'], $r['note'], $i, $existing[$i]]);
+        } else {
+            q('INSERT INTO hotel_rooms (hotel_id, name, details, price, note, sort) VALUES (?,?,?,?,?,?)', [$id, $r['name'], $r['details'], $r['price'], $r['note'], $i]);
+        }
+    }
+    foreach (array_slice($existing, count($roomRows)) as $extra) {
+        q('DELETE FROM hotel_rooms WHERE id = ?', [$extra]);
     }
 }
 

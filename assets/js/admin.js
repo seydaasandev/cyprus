@@ -274,6 +274,30 @@
     });
   }
 
+  /* ---------- Otel oda seçenekleri ---------- */
+  function initRooms() {
+    $$('[data-rooms]').forEach(function (wrap) {
+      var list = $('[data-room-list]', wrap);
+      var tpl = $('[data-room-template]', wrap);
+      function changed() { list.dispatchEvent(new Event('input', { bubbles: true })); }
+      $('[data-room-add]', wrap).addEventListener('click', function () {
+        list.appendChild(tpl.content.cloneNode(true));
+        var rows = $$('[data-room]', list);
+        var input = $('input', rows[rows.length - 1]);
+        if (input) { input.focus(); }
+        changed();
+      });
+      list.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-room-remove]');
+        if (!b) { return; }
+        var row = b.closest('[data-room]');
+        var name = $('input', row).value;
+        if (!name || window.confirm('“' + name + '” odası kaldırılsın mı? (Kaydet düğmesine basınca silinir.)')) { row.remove(); changed(); }
+      });
+      if (window.Sortable) { window.Sortable.create(list, { handle: '.adm-grip', animation: 160, ghostClass: 'sortable-ghost', onEnd: changed }); }
+    });
+  }
+
   /* ---------- Zengin metin düzenleyici ---------- */
   var RICH_TOOLS = [
     ['bold', '<b>K</b>', 'Kalın'], ['italic', '<i>İ</i>', 'İtalik'], ['underline', '<u>A</u>', 'Altı çizili'], ['|'],
@@ -368,6 +392,7 @@
     initFields();
     initThemePreview();
     initMedia();
+    initRooms();
     initRich();
   }
   if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', init); } else { init(); }

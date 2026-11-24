@@ -27,6 +27,11 @@ if (!empty($def['gallery'])) {
     $gallery = isset($formGallery) ? $formGallery : ($id > 0 ? array_column(rows('SELECT image FROM ' . $def['gallery']['table'] . ' WHERE ' . $def['gallery']['fk'] . ' = ? ORDER BY sort, id', [$id]), 'image') : []);
 }
 
+$roomRows = [];
+if (!empty($def['rooms'])) {
+    $roomRows = $formRooms ?? ($id > 0 ? rows('SELECT name, details, price, note FROM hotel_rooms WHERE hotel_id = ? ORDER BY sort, id', [$id]) : []);
+}
+
 $title = $record ? ($def['single'] . ': ' . strip_tags((string) $record[$def['label']])) : ('Yeni ' . $def['single']);
 $actions = [admin_btn('Listeye dön', admin_url('list', ['e' => $key]), 'arrow-left', 'adm-btn--ghost')];
 if ($record && ($view = crud_view_url($def, $record)) !== '') {
@@ -52,6 +57,29 @@ admin_header($title, $actions);
         <?php endforeach; ?>
       </div>
       <button type="button" class="adm-btn adm-btn--soft" data-gallery-add><?= icon('plus', 16) ?><span>Fotoğraf Ekle</span></button>
+    </div>
+  </section>
+  <?php endif; ?>
+
+  <?php if (!empty($def['rooms'])):
+      $roomRow = static function (array $r): string {
+          return '<div class="adm-room" data-room>'
+              . '<span class="adm-grip" title="Sürükleyerek sırala">' . icon('grip', 18) . '</span>'
+              . '<label><span>Oda adı *</span><input type="text" name="room_name[]" maxlength="190" value="' . e($r['name'] ?? '') . '" placeholder="Standart Oda (Deniz Manzaralı)"></label>'
+              . '<label><span>Fiyat</span><input type="text" name="room_price[]" maxlength="80" value="' . e($r['price'] ?? '') . '" placeholder="14.040 ₺"></label>'
+              . '<label><span>Fiyat notu</span><input type="text" name="room_note[]" maxlength="190" value="' . e($r['note'] ?? '') . '" placeholder="2 kişi / gecelik"></label>'
+              . '<label class="adm-room__wide"><span>Açıklama</span><input type="text" name="room_details[]" maxlength="400" value="' . e($r['details'] ?? '') . '" placeholder="Kapasite, pansiyon, oda özellikleri"></label>'
+              . '<button type="button" class="adm-icon-btn adm-icon-btn--danger" data-room-remove title="Odayı kaldır">' . icon('trash', 16) . '</button>'
+              . '</div>';
+      };
+  ?>
+  <section class="adm-card">
+    <h2>Oda seçenekleri ve fiyatlar</h2>
+    <p class="adm-hint">Her satır otel sayfasında bir oda seçeneği olarak görünür ve yanında "Rezervasyon Yap" düğmesi çıkar. Fiyatı istediğiniz biçimde yazabilirsiniz (ör. "14.040 ₺", "€120", "Fiyat sorunuz"). Sırayı değiştirmek için satırı tutup sürükleyin; oda adı boş bırakılan satır kaydedilmez.</p>
+    <div class="adm-rooms" data-rooms>
+      <div data-room-list><?php foreach ($roomRows as $r) { echo $roomRow($r); } ?></div>
+      <template data-room-template><?= $roomRow([]) ?></template>
+      <button type="button" class="adm-btn adm-btn--soft" data-room-add><?= icon('plus', 16) ?><span>Oda Ekle</span></button>
     </div>
   </section>
   <?php endif; ?>

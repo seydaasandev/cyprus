@@ -64,6 +64,7 @@ db()->beginTransaction();
 switch ($def['table']) {
     case 'hotels':
         q('DELETE FROM hotel_images WHERE hotel_id = ?', [$id]);
+        q('DELETE FROM hotel_rooms WHERE hotel_id = ?', [$id]);
         q('UPDATE factsheets SET hotel_id = NULL WHERE hotel_id = ?', [$id]);
         break;
     case 'regions':

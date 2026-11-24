@@ -80,11 +80,13 @@ function route_hotel(string $slug): never
         'hotel' => $hotel,
         'gallery' => rows('SELECT * FROM hotel_images WHERE hotel_id = ? ORDER BY sort, id', [$hotel['id']]),
         'sheets' => rows('SELECT * FROM factsheets WHERE hotel_id = ? AND active = 1 ORDER BY sort, id', [$hotel['id']]),
+        'rooms' => rows('SELECT * FROM hotel_rooms WHERE hotel_id = ? ORDER BY sort, id', [$hotel['id']]),
         'others' => rows('SELECT * FROM hotels WHERE active = 1 AND id <> ? ORDER BY (region_id <=> ?) DESC, sort, id LIMIT 3', [$hotel['id'], $hotel['region_id']]),
     ]);
 }
 
 try {
+    run_migrations();
     $path = current_path();
     $seg = $path === '' ? [] : explode('/', $path);
     $first = $seg[0] ?? '';
@@ -159,6 +161,14 @@ try {
                 'meta' => ['title' => setting('request_title', 'Talep Formu'), 'desc' => setting('request_text')],
                 'form' => handle_form('talep'),
                 'hotels' => rows('SELECT name, slug FROM hotels WHERE active = 1 ORDER BY sort, id'),
+            ]);
+
+        case $path === 'rezervasyon':
+            render('reserve', [
+                'meta' => ['title' => setting('reserve_title', 'Rezervasyon Talebi'), 'desc' => setting('reserve_text')],
+                'form' => handle_form('rezervasyon'),
+                'hotels' => rows('SELECT id, name, slug, image, location, concept FROM hotels WHERE active = 1 ORDER BY sort, id'),
+                'rooms' => rows('SELECT r.* FROM hotel_rooms r JOIN hotels h ON h.id = r.hotel_id WHERE h.active = 1 ORDER BY r.hotel_id, r.sort, r.id'),
             ]);
 
         case count($seg) === 1:

@@ -414,8 +414,44 @@
     }
   }
 
+  /* ---------- Rezervasyon formu ---------- */
+  function initReserve() {
+    var hotel = $('select[data-room-source]');
+    if (!hotel) { return; }
+    var field = $('[data-room-field]');
+    var room = field ? $('select', field) : null;
+    var source = {};
+    try { source = JSON.parse(hotel.getAttribute('data-room-source') || '{}'); } catch (err) { source = {}; }
+    if (room) {
+      hotel.addEventListener('change', function () {
+        var list = source[hotel.value] || [];
+        while (room.options.length > 1) { room.remove(1); }
+        list.forEach(function (r) {
+          var o = doc.createElement('option');
+          o.value = r.id;
+          o.textContent = r.label;
+          room.appendChild(o);
+        });
+        field.hidden = list.length === 0;
+      });
+    }
+    var checkin = $('input[name=checkin]');
+    var checkout = $('input[name=checkout]');
+    if (checkin && checkout) {
+      checkin.addEventListener('change', function () {
+        if (!checkin.value) { return; }
+        var next = new Date(checkin.value + 'T00:00:00');
+        next.setDate(next.getDate() + 1);
+        var min = next.getFullYear() + '-' + ('0' + (next.getMonth() + 1)).slice(-2) + '-' + ('0' + next.getDate()).slice(-2);
+        checkout.min = min;
+        if (!checkout.value || checkout.value < min) { checkout.value = min; }
+      });
+    }
+  }
+
   function init() {
     initPreloader();
+    initReserve();
     initScrollUi();
     initDrawer();
     initReveal();

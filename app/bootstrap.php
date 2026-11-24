@@ -149,6 +149,37 @@ function set_setting(string $key, string $value): void
     q('INSERT INTO settings (k, v) VALUES (?, ?) ON DUPLICATE KEY UPDATE v = VALUES(v)', [$key, $value]);
 }
 
+/* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
+const SCHEMA_VERSION = 2;
+
+/**
+ * Kod güncellendiğinde gereken tablo değişikliklerini bir kez uygular.
+ * (Site git ile güncellendiği için elle SQL çalıştırmak gerekmez.)
+ */
+function run_migrations(): void
+{
+    if ((int) setting('schema_version', '1') >= SCHEMA_VERSION) {
+        return;
+    }
+    // v2: otel oda seçenekleri/fiyatları ve rezervasyon formu alanları
+    q("CREATE TABLE IF NOT EXISTS hotel_rooms (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, hotel_id INT UNSIGNED NOT NULL, name VARCHAR(190) NOT NULL, details VARCHAR(400) NOT NULL DEFAULT '', price VARCHAR(80) NOT NULL DEFAULT '', note VARCHAR(190) NOT NULL DEFAULT '', sort INT NOT NULL DEFAULT 0, KEY hotel_id (hotel_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $existing = array_column(rows('SHOW COLUMNS FROM messages'), 'Field');
+    $columns = [
+        'room' => "VARCHAR(255) NOT NULL DEFAULT ''",
+        'checkin' => 'DATE NULL',
+        'checkout' => 'DATE NULL',
+        'adults' => 'TINYINT UNSIGNED NOT NULL DEFAULT 0',
+        'children' => 'TINYINT UNSIGNED NOT NULL DEFAULT 0',
+    ];
+    foreach ($columns as $name => $definition) {
+        if (!in_array($name, $existing, true)) {
+            q('ALTER TABLE messages ADD COLUMN ' . $name . ' ' . $definition);
+        }
+    }
+    set_setting('schema_version', (string) SCHEMA_VERSION);
+    settings_all(true);
+}
+
 /* ───────────── Çıktı yardımcıları ───────────── */
 function e($value): string
 {

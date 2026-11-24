@@ -141,6 +141,14 @@ textarea { resize: vertical; min-height: 70px; }
 .adm-savebar { position: fixed; left: 264px; right: 0; bottom: 0; z-index: 25; display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 28px; background: rgba(255,255,255,.95); backdrop-filter: blur(10px); border-top: 1px solid var(--a-line); }
 .adm-savebar--static { position: static; padding: 18px 0 0; border: 0; background: none; }
 .adm-savebar form { margin: 0; }
+.adm-tag--accent { background: #fff3c4; color: #7a5a00; }
+.adm-room { display: grid; grid-template-columns: auto minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.2fr) auto; gap: 10px 12px; align-items: end; padding: 14px; margin-bottom: 10px; border: 1px solid var(--a-line); border-radius: 10px; background: #fafcfe; }
+.adm-room label { display: grid; gap: 5px; min-width: 0; }
+.adm-room label span { font-size: .76rem; font-weight: 600; color: var(--a-muted); }
+.adm-room__wide { grid-column: 2 / 5; }
+.adm-room .adm-grip { align-self: center; }
+.adm-room > .adm-icon-btn { align-self: end; margin-bottom: 4px; }
+@media (max-width: 800px) { .adm-room { grid-template-columns: auto minmax(0, 1fr) auto; } .adm-room label, .adm-room__wide { grid-column: 2 / 3; } .adm-room > .adm-icon-btn { grid-row: 1; grid-column: 3; } }
 .adm-gallery__items { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
 .adm-gallery__item { position: relative; width: 130px; height: 92px; border-radius: 10px; overflow: hidden; background: #eef2f6; cursor: grab; }
 .adm-gallery__item img { width: 100%; height: 100%; object-fit: cover; }

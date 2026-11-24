@@ -118,7 +118,7 @@ function handle_form(string $kind): array
     }
 
     $in = [];
-    foreach (['name', 'surname', 'company', 'country', 'phone', 'email', 'subject', 'hotel', 'message'] as $f) {
+    foreach (['name', 'surname', 'company', 'country', 'phone', 'email', 'subject', 'hotel', 'message', 'room', 'checkin', 'checkout', 'adults', 'children'] as $f) {
         $in[$f] = trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', (string) ($_POST[$f] ?? '')));
     }
     $state['old'] = $in;
@@ -144,6 +144,13 @@ function handle_form(string $kind): array
     if ($in['phone'] !== '' && !preg_match('/^[0-9+()\s.\-]{6,30}$/', $in['phone'])) {
         $errors['phone'] = 'Telefon numarasını kontrol edin.';
     }
+    if ($kind === 'rezervasyon') {
+        $errors += validate_reservation($in);
+    } else {
+        // Rezervasyona özgü alanlar diğer formlarda kullanılmaz.
+        $in['room'] = $in['checkin'] = $in['checkout'] = '';
+        $in['adults'] = $in['children'] = '0';
+    }
     if ($kind === 'iletisim' && mb_strlen($in['message']) < 5) {
         $errors['message'] = 'Lütfen mesajınızı yazın.';
     }
@@ -168,12 +175,70 @@ function handle_form(string $kind): array
     }
 
     q(
-        'INSERT INTO messages (kind, name, surname, company, country, phone, email, subject, hotel, message, ip) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-        [$kind, $in['name'], $in['surname'], $in['company'], $in['country'], $in['phone'], $in['email'], $in['subject'], $in['hotel'], $in['message'], $ip]
+        'INSERT INTO messages (kind, name, surname, company, country, phone, email, subject, hotel, message, room, checkin, checkout, adults, children, ip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        [$kind, $in['name'], $in['surname'], $in['company'], $in['country'], $in['phone'], $in['email'], $in['subject'], $in['hotel'], $in['message'], $in['room'], $in['checkin'] ?: null, $in['checkout'] ?: null, (int) $in['adults'], (int) $in['children'], $ip]
     );
     send_form_mail($kind, $in);
     $_SESSION['form_sent'] = true;
     redirect(url(current_path()) . '#form');
+}
+
+const RESERVATION_MAX_GUESTS = 20;
+const RESERVATION_MAX_NIGHTS = 60;
+
+/**
+ * Rezervasyon talebini doğrular; otel ve oda adlarını veritabanındaki kayıtlarla eşleştirir.
+ * @return array<string,string> alan => hata iletisi
+ */
+function validate_reservation(array &$in): array
+{
+    $errors = [];
+    if (mb_strlen($in['surname']) < 2) {
+        $errors['surname'] = 'Lütfen soyadınızı yazın.';
+    }
+    if ($in['phone'] === '') {
+        $errors['phone'] = 'Lütfen telefon numaranızı yazın.';
+    }
+    $hotel = row('SELECT id, name FROM hotels WHERE name = ? AND active = 1', [$in['hotel']]);
+    if (!$hotel) {
+        $errors['hotel'] = 'Lütfen bir otel seçin.';
+    } elseif ($in['room'] !== '') {
+        $room = row('SELECT name, price, note FROM hotel_rooms WHERE id = ? AND hotel_id = ?', [(int) $in['room'], $hotel['id']]);
+        if (!$room) {
+            $errors['room'] = 'Seçilen oda bu otelde bulunamadı.';
+        } else {
+            $in['room_id'] = $in['room'];
+            // Mesajda oda adı ve o andaki fiyat birlikte saklanır.
+            $in['room'] = trim($room['name'] . ($room['price'] !== '' ? ' — ' . $room['price'] : '') . ($room['note'] !== '' ? ' (' . $room['note'] . ')' : ''));
+        }
+    }
+    $in['room'] = mb_substr($in['room'], 0, 255);
+    $date = static function (string $value): ?DateTimeImmutable {
+        $d = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return ($d && $d->format('Y-m-d') === $value) ? $d : null;
+    };
+    $checkin = $date($in['checkin']);
+    $checkout = $date($in['checkout']);
+    $today = new DateTimeImmutable('today');
+    if (!$checkin || $checkin < $today) {
+        $errors['checkin'] = 'Geçerli bir giriş tarihi seçin.';
+    }
+    if (!$checkout || ($checkin && $checkout <= $checkin)) {
+        $errors['checkout'] = 'Çıkış tarihi giriş tarihinden sonra olmalı.';
+    } elseif ($checkin && $checkin->diff($checkout)->days > RESERVATION_MAX_NIGHTS) {
+        $errors['checkout'] = 'En fazla ' . RESERVATION_MAX_NIGHTS . ' gece için talep gönderilebilir.';
+    }
+    $adults = (int) $in['adults'];
+    $children = (int) $in['children'];
+    if ($adults < 1 || $adults > RESERVATION_MAX_GUESTS) {
+        $errors['adults'] = 'Yetişkin sayısı 1 ile ' . RESERVATION_MAX_GUESTS . ' arasında olmalı.';
+    }
+    if ($children < 0 || $children > RESERVATION_MAX_GUESTS) {
+        $errors['children'] = 'Çocuk sayısını kontrol edin.';
+    }
+    $in['adults'] = (string) $adults;
+    $in['children'] = (string) $children;
+    return $errors;
 }
 
 function send_form_mail(string $kind, array $in): void
@@ -182,6 +247,9 @@ function send_form_mail(string $kind, array $in): void
         return;
     }
     $to = setting('mail_to', setting('email'));
+    if ($kind === 'rezervasyon' && filter_var(setting('reservation_mail_to'), FILTER_VALIDATE_EMAIL)) {
+        $to = setting('reservation_mail_to');
+    }
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return;
     }
@@ -191,16 +259,18 @@ function send_form_mail(string $kind, array $in): void
     if (!filter_var($from, FILTER_VALIDATE_EMAIL)) {
         $from = 'noreply@' . $host;
     }
-    $labels = ['name' => 'Ad', 'surname' => 'Soyad', 'company' => 'Firma', 'country' => 'Ülke', 'phone' => 'Telefon', 'email' => 'E-posta', 'subject' => 'Konu', 'hotel' => 'Otel', 'message' => 'Mesaj'];
-    $body = ($kind === 'talep' ? 'Yeni talep formu' : 'Yeni iletişim mesajı') . "\n" . str_repeat('-', 40) . "\n";
+    $kindTitles = ['talep' => 'Talep Formu', 'rezervasyon' => 'Rezervasyon Talebi', 'iletisim' => 'İletişim'];
+    $kindTitle = $kindTitles[$kind] ?? 'İletişim';
+    $labels = ['hotel' => 'Otel', 'room' => 'Oda', 'checkin' => 'Giriş tarihi', 'checkout' => 'Çıkış tarihi', 'adults' => 'Yetişkin', 'children' => 'Çocuk', 'name' => 'Ad', 'surname' => 'Soyad', 'company' => 'Firma', 'country' => 'Ülke', 'phone' => 'Telefon', 'email' => 'E-posta', 'subject' => 'Konu', 'message' => 'Mesaj'];
+    $body = 'Yeni ' . mb_strtolower($kindTitle) . "\n" . str_repeat('-', 40) . "\n";
     foreach ($labels as $k => $label) {
-        if ($in[$k] !== '') {
+        if (($in[$k] ?? '') !== '' && !($kind !== 'rezervasyon' && in_array($k, ['adults', 'children'], true))) {
             $body .= $label . ': ' . $in[$k] . "\n";
         }
     }
     $body .= str_repeat('-', 40) . "\n" . abs_url('admin/?p=messages') . "\n";
     $clean = static fn(string $s): string => trim(preg_replace('/[\r\n]+/', ' ', $s));
-    $subject = '=?UTF-8?B?' . base64_encode($site . ' – ' . ($kind === 'talep' ? 'Talep Formu' : 'İletişim') . ': ' . $clean($in['name'])) . '?=';
+    $subject = '=?UTF-8?B?' . base64_encode($site . ' – ' . $kindTitle . ': ' . $clean($in['name'] . ' ' . $in['surname'])) . '?=';
     $headers = [
         'From: =?UTF-8?B?' . base64_encode($site) . '?= <' . $from . '>',
         'Reply-To: ' . $clean($in['email']),

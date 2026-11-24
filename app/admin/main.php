@@ -107,6 +107,7 @@ function admin_login(): void
 }
 
 try {
+    run_migrations();
     $page = preg_replace('/[^a-z_]/', '', (string) ($_GET['p'] ?? 'dashboard'));
     $me = admin_user();
 
