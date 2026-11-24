@@ -1,0 +1,13 @@
+# Sunucuya özel / gizli dosyalar
+app/config.php
+app/error.log
+error_log
+# Otomatik üretilen küçük görseller
+uploads/cache/
+# Yedek ve arşivler
+*.tar.gz
+*.zip
+/*.sql
+# Lisanslı yazı tipi dosyaları depoya girmez (sunucuya elle kopyalanır)
+assets/fonts/*.woff
+assets/fonts/*.woff2

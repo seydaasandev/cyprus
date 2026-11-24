@@ -1,0 +1,16 @@
+# Yüklenen dosyalar asla çalıştırılmaz
+Options -Indexes -ExecCGI
+<FilesMatch "\.(php\d?|phtml|phar|pl|py|cgi|sh|htaccess)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php8
+
+# Yüklenen SVG dosyaları betik çalıştıramaz
+<IfModule mod_headers.c>
+  <FilesMatch "\.svg$">
+    Header set Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+  </FilesMatch>
+</IfModule>
