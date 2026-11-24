@@ -305,7 +305,7 @@ INSERT INTO `sections` VALUES
 (7,'regions','Bölgeler (Kuzey Kıbrıs)','Cyprus Touristic','Kuzey Kıbrıs','Kıbrıs rüyanızı gerçekleştirebileceğiniz bölgeler…','','','','light','',0,7,1),
 (8,'why','Garanti ediyoruz / Öz değerler','Cyprus Touristic','Garanti ediyoruz','','','Hakkımızda','hakkimizda','soft','',0,8,1),
 (9,'factsheets','Hotel Factsheets','PDF','Hotel Factsheets','','','','','light','',0,9,1),
-(10,'cta','Çağrı bandı (Talep Formu)','Talep Formu','Hayalinizdeki Kıbrıs tatilini \"Cyprus Touristic\" ile keşfedin...','Kuzey Kıbrıs tatilinizi planlarken hayallerinize ortak olup bütçenize en uygun tatili birlikte organize edelim.','uploads/2024/11/california-coastal-cloud-darren-white.jpg','Talep Formu','talep-formu','brand','',0,10,1),
+(10,'cta','Çağrı bandı (Talep Formu)','Talep Formu','Hayalinizdeki Kıbrıs tatilini \"Cyprus Touristic\" ile keşfedin...','Kuzey Kıbrıs tatilinizi planlarken hayallerinize ortak olup bütçenize en uygun tatili birlikte organize edelim.','uploads/2021/10/karpaz-altinkum-sahili.jpg','Talep Formu','talep-formu','brand','',0,10,1),
 (11,'contact','İletişim kartları','İletişim','Bizimle İletişime Geçin','Aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.','','İletişim','iletisim','soft','',0,11,1);
 /*!40000 ALTER TABLE `sections` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -490,7 +490,7 @@ CREATE TABLE `users` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `login_attempts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
