@@ -1,7 +1,11 @@
 <?php
 /** Otel detay sayfası. Satış yok: bilgi + talep formu yönlendirmesi. */
 $features = lines($hotel['features']);
-$images = array_values(array_filter(array_merge([$hotel['image']], array_column($gallery, 'image'))));
+// Ana görsel + galeri; galeri fotoğraflarının başlığı (oda adı) ışık kutusunda ve küçük resimde gösterilir.
+$shots = array_merge(
+    $hotel['image'] !== '' ? [['image' => $hotel['image'], 'caption' => '']] : [],
+    array_values(array_filter($gallery, static fn(array $g): bool => $g['image'] !== ''))
+);
 $requestUrl = url('talep-formu') . '?otel=' . rawurlencode($hotel['name']);
 $reserveUrl = url('rezervasyon') . '?otel=' . rawurlencode($hotel['slug']);
 $bookLabel = setting('label_book', 'Rezervasyon Yap');
@@ -11,12 +15,14 @@ $canReserve = reservations_enabled();
 <section class="sec sec--light hotel">
   <div class="container hotel__grid">
     <div class="hotel__main">
-      <?php if ($images): ?>
+      <?php if ($shots): ?>
       <div class="gallery" data-gallery data-reveal>
-        <a class="gallery__main" href="<?= e(media($images[0])) ?>" data-lb><img src="<?= e(thumb($images[0], 1200)) ?>" alt="<?= e($hotel['name']) ?>"></a>
-        <?php if (count($images) > 1): ?>
+        <a class="gallery__main" href="<?= e(media($shots[0]['image'])) ?>" data-lb data-caption="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>"><img src="<?= e(thumb($shots[0]['image'], 1200)) ?>" alt="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>"></a>
+        <?php if (count($shots) > 1): ?>
         <div class="gallery__thumbs">
-          <?php foreach (array_slice($images, 1) as $img): ?><a href="<?= e(media($img)) ?>" data-lb><img src="<?= e(thumb($img, 400)) ?>" alt="<?= e($hotel['name']) ?>" loading="lazy"></a><?php endforeach; ?>
+          <?php foreach (array_slice($shots, 1) as $shot): $cap = (string) ($shot['caption'] ?? ''); ?>
+          <a href="<?= e(media($shot['image'])) ?>" data-lb data-caption="<?= e($cap !== '' ? $cap : $hotel['name']) ?>"<?= $cap !== '' ? ' title="' . e($cap) . '"' : '' ?>><img src="<?= e(thumb($shot['image'], 400)) ?>" alt="<?= e($cap !== '' ? $hotel['name'] . ' – ' . $cap : $hotel['name']) ?>" loading="lazy"><?php if ($cap !== ''): ?><span class="gallery__cap"><?= e($cap) ?></span><?php endif; ?></a>
+          <?php endforeach; ?>
         </div>
         <?php endif; ?>
       </div>

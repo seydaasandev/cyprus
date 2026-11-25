@@ -261,7 +261,7 @@
       function add(item) {
         var d = doc.createElement('div');
         d.className = 'adm-gallery__item';
-        d.innerHTML = '<input type="hidden" name="gallery[]" value="' + escapeHtml(item.path) + '">' + previewHtml(item) + '<button type="button" data-gallery-remove title="Kaldır">×</button>';
+        d.innerHTML = '<input type="hidden" name="gallery[]" value="' + escapeHtml(item.path) + '">' + previewHtml(item) + '<input type="text" class="adm-gallery__cap" name="gallery_caption[]" maxlength="190" placeholder="Oda adı" aria-label="Fotoğraf başlığı (oda adı)"><button type="button" data-gallery-remove title="Kaldır">×</button>';
         items.appendChild(d);
         items.dispatchEvent(new Event('input', { bubbles: true }));
       }

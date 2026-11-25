@@ -150,8 +150,10 @@ textarea { resize: vertical; min-height: 70px; }
 .adm-room > .adm-icon-btn { align-self: end; margin-bottom: 4px; }
 @media (max-width: 800px) { .adm-room { grid-template-columns: auto minmax(0, 1fr) auto; } .adm-room label, .adm-room__wide { grid-column: 2 / 3; } .adm-room > .adm-icon-btn { grid-row: 1; grid-column: 3; } }
 .adm-gallery__items { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
-.adm-gallery__item { position: relative; width: 130px; height: 92px; border-radius: 10px; overflow: hidden; background: #eef2f6; cursor: grab; }
-.adm-gallery__item img { width: 100%; height: 100%; object-fit: cover; }
+.adm-gallery__item { position: relative; width: 150px; border-radius: 10px; overflow: hidden; background: #eef2f6; cursor: grab; }
+.adm-gallery__item img { display: block; width: 100%; height: 100px; object-fit: cover; }
+.adm-gallery__cap { display: block; width: 100%; border: 0; border-top: 1px solid #dde4ec; padding: 7px 8px; font-size: 12px; background: #fff; }
+.adm-gallery__cap:focus { outline: 2px solid var(--adm-primary, #00416A); outline-offset: -2px; }
 .adm-gallery__item button { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: rgba(192,57,43,.92); color: #fff; display: grid; place-items: center; }
 
 /* Zengin metin düzenleyici */

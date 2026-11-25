@@ -4,6 +4,7 @@ require_once __DIR__ . '/_crud.php';
 
 const PASSWORD_MIN_LENGTH = 10;
 const GALLERY_MAX_IMAGES = 60;
+const GALLERY_CAPTION_MAX = 190;
 const ROOMS_MAX = 40;
 
 admin_require_post();
@@ -72,10 +73,12 @@ if ($def['table'] === 'users' && isset($data['username'])) {
 
 $gallery = [];
 if (!empty($def['gallery'])) {
-    foreach (array_slice((array) ($_POST['gallery'] ?? []), 0, GALLERY_MAX_IMAGES) as $img) {
+    $captions = array_values((array) ($_POST['gallery_caption'] ?? []));
+    foreach (array_slice(array_values((array) ($_POST['gallery'] ?? [])), 0, GALLERY_MAX_IMAGES) as $i => $img) {
         $img = admin_clean_value(['type' => 'image'], $img);
         if ($img !== '') {
-            $gallery[] = $img;
+            $caption = is_string($captions[$i] ?? null) ? $captions[$i] : '';
+            $gallery[] = ['image' => $img, 'caption' => mb_substr(trim(strip_tags($caption)), 0, GALLERY_CAPTION_MAX)];
         }
     }
 }
@@ -126,8 +129,8 @@ if ($record) {
 if (!empty($def['gallery'])) {
     $g = $def['gallery'];
     q('DELETE FROM ' . $g['table'] . ' WHERE ' . $g['fk'] . ' = ?', [$id]);
-    foreach ($gallery as $i => $img) {
-        q('INSERT INTO ' . $g['table'] . ' (' . $g['fk'] . ', image, sort) VALUES (?, ?, ?)', [$id, $img, $i]);
+    foreach ($gallery as $i => $shot) {
+        q('INSERT INTO ' . $g['table'] . ' (' . $g['fk'] . ', image, caption, sort) VALUES (?, ?, ?, ?)', [$id, $shot['image'], $shot['caption'], $i]);
     }
 }
 

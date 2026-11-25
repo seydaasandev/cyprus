@@ -150,7 +150,7 @@ function set_setting(string $key, string $value): void
 }
 
 /* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const MIGRATION_LOCK = 'cyprus_schema_migration';
 const MIGRATION_LOCK_WAIT_SECONDS = 15;
 
@@ -178,6 +178,9 @@ function run_migrations(): void
         }
         if ($version < 4) {
             migrate_content_v4();
+        }
+        if ($version < 5) {
+            migrate_gallery_captions(require APP_DIR . '/data/gallery_captions_v5.php');
         }
         set_setting('schema_version', (string) SCHEMA_VERSION);
         settings_all(true);
@@ -282,6 +285,22 @@ function migrate_content_v4(): void
         $clean = str_replace(' ve Türkiye’yi tanıtmak', ' tanıtmak', $text);
         if ($clean !== $text) {
             set_setting($key, $clean);
+        }
+    }
+}
+
+/**
+ * v5: galeri fotoğraflarına başlık (oda adı) alanı. Hazır gelen oda fotoğraflarının başlıkları doldurulur;
+ * panelden yazılmış başlıklar korunur.
+ */
+function migrate_gallery_captions(array $captions): void
+{
+    if (!in_array('caption', array_column(rows('SHOW COLUMNS FROM hotel_images'), 'Field'), true)) {
+        q("ALTER TABLE hotel_images ADD COLUMN caption VARCHAR(190) NOT NULL DEFAULT ''");
+    }
+    foreach ($captions as $slug => $files) {
+        foreach ($files as $file => $caption) {
+            q("UPDATE hotel_images SET caption = ? WHERE image = ? AND caption = ''", [$caption, 'uploads/oteller/galeri/' . $slug . '/' . $file]);
         }
     }
 }

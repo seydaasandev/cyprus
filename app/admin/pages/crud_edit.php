@@ -24,7 +24,7 @@ unset($spec);
 
 $gallery = [];
 if (!empty($def['gallery'])) {
-    $gallery = isset($formGallery) ? $formGallery : ($id > 0 ? array_column(rows('SELECT image FROM ' . $def['gallery']['table'] . ' WHERE ' . $def['gallery']['fk'] . ' = ? ORDER BY sort, id', [$id]), 'image') : []);
+    $gallery = isset($formGallery) ? $formGallery : ($id > 0 ? rows('SELECT image, caption FROM ' . $def['gallery']['table'] . ' WHERE ' . $def['gallery']['fk'] . ' = ? ORDER BY sort, id', [$id]) : []);
 }
 
 $roomRows = [];
@@ -49,11 +49,11 @@ admin_header($title, $actions);
   <?php if (!empty($def['gallery'])): ?>
   <section class="adm-card">
     <h2>Fotoğraf galerisi</h2>
-    <p class="adm-hint">Birden çok görsel ekleyebilir, sürükleyerek sıralayabilirsiniz. Ana görsel galerinin ilk fotoğrafı olarak gösterilir.</p>
+    <p class="adm-hint">Birden çok görsel ekleyebilir, sürükleyerek sıralayabilirsiniz. Ana görsel galerinin ilk fotoğrafı olarak gösterilir. Fotoğrafın altındaki kutuya oda adını (ör. "Deluxe Sea") yazarsanız sitede fotoğraf büyütüldüğünde bu ad görünür; boş bırakılırsa otel adı yazar.</p>
     <div class="adm-gallery" data-gallery>
       <div class="adm-gallery__items" data-gallery-items>
-        <?php foreach ($gallery as $img): ?>
-        <div class="adm-gallery__item"><input type="hidden" name="gallery[]" value="<?= e($img) ?>"><?= admin_media_preview($img) ?><button type="button" data-gallery-remove title="Kaldır"><?= icon('close', 14) ?></button></div>
+        <?php foreach ($gallery as $shot): ?>
+        <div class="adm-gallery__item"><input type="hidden" name="gallery[]" value="<?= e($shot['image']) ?>"><?= admin_media_preview($shot['image']) ?><input type="text" class="adm-gallery__cap" name="gallery_caption[]" maxlength="190" value="<?= e($shot['caption'] ?? '') ?>" placeholder="Oda adı" aria-label="Fotoğraf başlığı (oda adı)"><button type="button" data-gallery-remove title="Kaldır"><?= icon('close', 14) ?></button></div>
         <?php endforeach; ?>
       </div>
       <button type="button" class="adm-btn adm-btn--soft" data-gallery-add><?= icon('plus', 16) ?><span>Fotoğraf Ekle</span></button>

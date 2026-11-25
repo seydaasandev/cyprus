@@ -346,7 +346,7 @@
       var nodes = $$('[data-lb]', scope);
       var group = nodes.map(function (n) {
         var inner = $('img', n);
-        return { src: n.getAttribute('href') || n.getAttribute('data-full') || n.currentSrc || n.src, caption: n.getAttribute('alt') || (inner ? inner.alt : '') || '' };
+        return { src: n.getAttribute('href') || n.getAttribute('data-full') || n.currentSrc || n.src, caption: n.getAttribute('data-caption') || n.getAttribute('alt') || (inner ? inner.alt : '') || '' };
       });
       open(group, Math.max(0, nodes.indexOf(t)));
     });
