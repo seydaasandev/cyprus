@@ -67,7 +67,8 @@ Eski ürün adresleri (`/urun/otel-adi`) yeni otel sayfalarına kalıcı olarak 
 ## Rezervasyon talebi
 
 - Her otelin düzenleme ekranında **Oda seçenekleri ve fiyatlar** bölümü vardır (oda adı, fiyat, fiyat notu, açıklama; sürükleyerek sıralanır).
-- Otel sayfasında her odanın yanında **Rezervasyon Yap** düğmesi çıkar; ziyaretçi `/rezervasyon` formunda tarih, kişi sayısı ve iletişim bilgilerini doldurur.
+- Rezervasyon düğmesi varsayılan olarak **kapalıdır** (rezervasyon kurumsal girişten yapılır); oda seçenekleri bilgi olarak listelenir. *Sayfa Metinleri > Oteller sayfası > Rezervasyon düğmesini ve formunu göster* ile açılır.
+- Açıkken otel sayfasında her odanın yanında **Rezervasyon Yap** düğmesi çıkar; ziyaretçi `/rezervasyon` formunda tarih, kişi sayısı ve iletişim bilgilerini doldurur.
 - Talep, *İletişim ve Sosyal > Form bildirimleri* altındaki rezervasyon e-posta adresine gönderilir ve paneldeki **Mesajlar** bölümüne kaydedilir. Çevrimiçi ödeme yoktur.
 
 ## Güncelleme

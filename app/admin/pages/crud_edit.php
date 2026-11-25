@@ -75,7 +75,7 @@ admin_header($title, $actions);
   ?>
   <section class="adm-card">
     <h2>Oda seçenekleri ve fiyatlar</h2>
-    <p class="adm-hint">Her satır otel sayfasında bir oda seçeneği olarak görünür ve yanında "Rezervasyon Yap" düğmesi çıkar. Fiyatı istediğiniz biçimde yazabilirsiniz (ör. "14.040 ₺", "€120", "Fiyat sorunuz"). Sırayı değiştirmek için satırı tutup sürükleyin; oda adı boş bırakılan satır kaydedilmez.</p>
+    <p class="adm-hint">Her satır otel sayfasında bir oda seçeneği olarak görünür; rezervasyon düğmesi açıksa (Sayfa Metinleri > Oteller sayfası) yanında "Rezervasyon Yap" düğmesi çıkar. Fiyatı istediğiniz biçimde yazabilirsiniz (ör. "14.040 ₺", "€120", "Fiyat sorunuz"). Sırayı değiştirmek için satırı tutup sürükleyin; oda adı boş bırakılan satır kaydedilmez.</p>
     <div class="adm-rooms" data-rooms>
       <div data-room-list><?php foreach ($roomRows as $r) { echo $roomRow($r); } ?></div>
       <template data-room-template><?= $roomRow([]) ?></template>

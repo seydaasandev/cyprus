@@ -1,7 +1,10 @@
 <?php
 /** sitemap.xml — yayındaki tüm sayfalar. */
 header('Content-Type: application/xml; charset=utf-8');
-$urls = ['', 'oteller', 'hizmetlerimiz', 'kuzey-kibris', 'hotel-factsheets', 'iletisim', 'talep-formu', 'rezervasyon'];
+$urls = ['', 'oteller', 'hizmetlerimiz', 'kuzey-kibris', 'hotel-factsheets', 'iletisim', 'talep-formu'];
+if (reservations_enabled()) {
+    $urls[] = 'rezervasyon';
+}
 foreach (rows('SELECT slug FROM hotels WHERE active = 1 ORDER BY sort, id') as $r) {
     $urls[] = 'oteller/' . $r['slug'];
 }

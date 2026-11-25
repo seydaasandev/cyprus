@@ -26,7 +26,7 @@
 <?php if ($hotels): ?>
 <section class="sec sec--soft">
   <div class="container">
-    <?= section_head($region['title'], setting('hotels_title', 'Rezervasyon Yap'), '', 'center') ?>
+    <?= section_head($region['title'], setting('hotels_title', 'Oteller'), '', 'center') ?>
     <div class="grid grid--3"><?php foreach ($hotels as $i => $h) { echo hotel_card($h, $i); } ?></div>
   </div>
 </section>

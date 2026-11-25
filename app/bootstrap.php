@@ -150,7 +150,7 @@ function set_setting(string $key, string $value): void
 }
 
 /* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const MIGRATION_LOCK = 'cyprus_schema_migration';
 const MIGRATION_LOCK_WAIT_SECONDS = 15;
 
@@ -175,6 +175,9 @@ function run_migrations(): void
         }
         if ($version < 3) {
             migrate_hotel_setup(require APP_DIR . '/data/hotel_setup_v3.php');
+        }
+        if ($version < 4) {
+            migrate_content_v4();
         }
         set_setting('schema_version', (string) SCHEMA_VERSION);
         settings_all(true);
@@ -245,6 +248,48 @@ function migrate_hotel_setup(array $setup): void
             }
         }
     }
+}
+
+/**
+ * v4: rezervasyon yalnızca kurumsal girişten yapıldığı için "Rezervasyon Yap" başlıkları "Oteller" olur,
+ * ofis adresi güncellenir, Türkiye adresi ve "Türkiye'yi tanıtmak" ifadesi kaldırılır.
+ * Yalnızca eski değeri taşıyan alanlar değişir; panelden yeniden yazılmış metinlere dokunulmaz.
+ */
+function migrate_content_v4(): void
+{
+    $oldLabel = 'Rezervasyon Yap';
+    $newLabel = 'Oteller';
+    q("UPDATE menu_items SET title = ? WHERE title = ? AND url = 'oteller'", [$newLabel, $oldLabel]);
+    q("UPDATE sections SET title = ? WHERE title = ? AND skey = 'hotels'", [$newLabel, $oldLabel]);
+    q("UPDATE slides SET btn1_text = ? WHERE btn1_text = ? AND btn1_url = 'oteller'", [$newLabel, $oldLabel]);
+    q("UPDATE slides SET btn2_text = ? WHERE btn2_text = ? AND btn2_url = 'oteller'", [$newLabel, $oldLabel]);
+    if (setting('hotels_title') === $oldLabel) {
+        set_setting('hotels_title', $newLabel);
+    }
+    if (setting('label_rooms') === 'Oda Seçenekleri ve Fiyatlar') {
+        set_setting('label_rooms', 'Oda Seçenekleri');
+    }
+
+    set_setting('address', "Karaoğlanoğlu Cd. Sel Trade Center\nDış Kapı No: F Blok 166\nGirne, KKTC");
+    set_setting('address2', '');
+
+    // Hakkımızda metinlerinin ilk cümlesi tümüyle kalkar; kısa tanıtım satırlarında yalnızca "ve Türkiye'yi" çıkarılır.
+    $sentence = 'CYPRUS TOURISTIC, dünya arenasında Kuzey Kıbrıs’ı ve Türkiye’yi tanıtmak için faaliyet göstermektedir. ';
+    q("UPDATE pages SET content = REPLACE(content, ?, '') WHERE slug = 'hakkimizda'", [$sentence]);
+    q("UPDATE sections SET body = REPLACE(body, ?, '') WHERE skey = 'intro'", [$sentence]);
+    foreach (['topbar_text', 'footer_about', 'meta_desc'] as $key) {
+        $text = setting($key);
+        $clean = str_replace(' ve Türkiye’yi tanıtmak', ' tanıtmak', $text);
+        if ($clean !== $text) {
+            set_setting($key, $clean);
+        }
+    }
+}
+
+/** Otel sayfalarındaki "Rezervasyon Yap" düğmesi ve rezervasyon formu açık mı? (Panelden açılır.) */
+function reservations_enabled(): bool
+{
+    return setting('reserve_enabled', '0') === '1';
 }
 
 /* ───────────── Çıktı yardımcıları ───────────── */

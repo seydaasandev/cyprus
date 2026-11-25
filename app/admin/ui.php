@@ -139,7 +139,7 @@ function admin_link_options(): array
     if ($opts !== null) {
         return $opts;
     }
-    $opts = ['' => 'Anasayfa', 'oteller' => 'Rezervasyon Yap (oteller)', 'hizmetlerimiz' => 'Hizmetlerimiz', 'kuzey-kibris' => 'Kuzey Kıbrıs (bölgeler)', 'hotel-factsheets' => 'Hotel Factsheets', 'iletisim' => 'İletişim', 'talep-formu' => 'Talep Formu'];
+    $opts = ['' => 'Anasayfa', 'oteller' => 'Oteller', 'hizmetlerimiz' => 'Hizmetlerimiz', 'kuzey-kibris' => 'Kuzey Kıbrıs (bölgeler)', 'hotel-factsheets' => 'Hotel Factsheets', 'iletisim' => 'İletişim', 'talep-formu' => 'Talep Formu'];
     foreach (rows('SELECT slug, title FROM pages ORDER BY sort, id') as $r) {
         $opts[$r['slug']] = 'Sayfa: ' . $r['title'];
     }

@@ -115,7 +115,7 @@ try {
 
         case $path === 'oteller':
             render('hotels', [
-                'meta' => ['title' => setting('hotels_title', 'Rezervasyon Yap'), 'desc' => setting('hotels_text')],
+                'meta' => ['title' => setting('hotels_title', 'Oteller'), 'desc' => setting('hotels_text')],
                 'hotels' => rows('SELECT h.*, r.title AS region FROM hotels h LEFT JOIN regions r ON r.id = h.region_id WHERE h.active = 1 ORDER BY h.sort, h.id'),
                 'regions' => rows('SELECT r.id, r.title FROM regions r WHERE r.active = 1 AND EXISTS (SELECT 1 FROM hotels h WHERE h.region_id = r.id AND h.active = 1) ORDER BY r.sort'),
             ]);
@@ -164,6 +164,11 @@ try {
             ]);
 
         case $path === 'rezervasyon':
+            if (!reservations_enabled()) {
+                // Rezervasyon formu kapalıyken eski bağlantılar otel listesine gider.
+                header('Location: ' . url('oteller'), true, 302);
+                exit;
+            }
             render('reserve', [
                 'meta' => ['title' => setting('reserve_title', 'Rezervasyon Talebi'), 'desc' => setting('reserve_text')],
                 'form' => handle_form('rezervasyon'),

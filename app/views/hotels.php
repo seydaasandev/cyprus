@@ -1,5 +1,5 @@
 <?php /** Otel listesi (bölgeye göre süzme). */ ?>
-<?= page_hero(setting('hotels_title', 'Rezervasyon Yap'), setting('hotels_kicker', 'Kuzey Kıbrıs'), setting('hotels_image'), [[setting('hotels_title', 'Rezervasyon Yap'), '']], setting('hotels_text')) ?>
+<?= page_hero(setting('hotels_title', 'Oteller'), setting('hotels_kicker', 'Kuzey Kıbrıs'), setting('hotels_image'), [[setting('hotels_title', 'Oteller'), '']], setting('hotels_text')) ?>
 <section class="sec sec--light">
   <div class="container">
     <?php if (count($regions) > 1): ?>

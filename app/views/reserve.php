@@ -28,7 +28,7 @@ $currentRooms = $selectedHotel ? ($roomsByHotel[$selectedHotel['name']] ?? []) :
 $today = date('Y-m-d');
 $title = setting('reserve_title', 'Rezervasyon Talebi');
 ?>
-<?= page_hero($title, opt('site_name'), $selectedHotel['image'] ?? setting('request_image'), [[setting('hotels_title', 'Rezervasyon Yap'), 'oteller'], [$title, '']], setting('reserve_text')) ?>
+<?= page_hero($title, opt('site_name'), $selectedHotel['image'] ?? setting('request_image'), [[setting('hotels_title', 'Oteller'), 'oteller'], [$title, '']], setting('reserve_text')) ?>
 <section class="sec sec--light">
   <div class="container contact">
     <div class="contact__info">
