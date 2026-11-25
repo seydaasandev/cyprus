@@ -18,6 +18,7 @@ Satış / sepet yoktur; oteller tanıtım amaçlıdır ve ziyaretçi **Talep For
 | `app/forms.php` | İletişim ve talep formu, CAPTCHA, e-posta bildirimi |
 | `app/views/` | Sayfa şablonları (anasayfa bölümleri `home.php` içinde) |
 | `app/admin/` | Panel kodu; içerik türleri ve ayarlar `entities.php` içinde tanımlıdır |
+| `app/data/` | Sürüm güncellemelerinde bir kez uygulanan içerik verisi (otel sırası, oda tipleri) |
 | `app/tools/admin.php` | Komut satırından yönetici oluşturma / şifre sıfırlama |
 | `assets/` | CSS, JavaScript, yazı tipleri |
 | `uploads/` | Yüklenen görsel, video ve PDF dosyaları (`uploads/cache/` otomatik üretilir) |

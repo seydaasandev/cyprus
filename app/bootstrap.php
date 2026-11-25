@@ -150,10 +150,12 @@ function set_setting(string $key, string $value): void
 }
 
 /* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
+const MIGRATION_LOCK = 'cyprus_schema_migration';
+const MIGRATION_LOCK_WAIT_SECONDS = 15;
 
 /**
- * Kod güncellendiğinde gereken tablo değişikliklerini bir kez uygular.
+ * Kod güncellendiğinde gereken tablo ve içerik değişikliklerini bir kez uygular.
  * (Site git ile güncellendiği için elle SQL çalıştırmak gerekmez.)
  */
 function run_migrations(): void
@@ -161,7 +163,29 @@ function run_migrations(): void
     if ((int) setting('schema_version', '1') >= SCHEMA_VERSION) {
         return;
     }
-    // v2: otel oda seçenekleri/fiyatları ve rezervasyon formu alanları
+    // Aynı anda gelen iki istek adımları iki kez uygulamasın.
+    if ((int) val('SELECT GET_LOCK(?, ?)', [MIGRATION_LOCK, MIGRATION_LOCK_WAIT_SECONDS]) !== 1) {
+        return;
+    }
+    try {
+        settings_all(true);
+        $version = (int) setting('schema_version', '1');
+        if ($version < 2) {
+            migrate_rooms_schema();
+        }
+        if ($version < 3) {
+            migrate_hotel_setup(require APP_DIR . '/data/hotel_setup_v3.php');
+        }
+        set_setting('schema_version', (string) SCHEMA_VERSION);
+        settings_all(true);
+    } finally {
+        q('DO RELEASE_LOCK(?)', [MIGRATION_LOCK]);
+    }
+}
+
+/** v2: otel oda seçenekleri/fiyatları tablosu ve rezervasyon formu alanları. */
+function migrate_rooms_schema(): void
+{
     q("CREATE TABLE IF NOT EXISTS hotel_rooms (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, hotel_id INT UNSIGNED NOT NULL, name VARCHAR(190) NOT NULL, details VARCHAR(400) NOT NULL DEFAULT '', price VARCHAR(80) NOT NULL DEFAULT '', note VARCHAR(190) NOT NULL DEFAULT '', sort INT NOT NULL DEFAULT 0, KEY hotel_id (hotel_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     $existing = array_column(rows('SHOW COLUMNS FROM messages'), 'Field');
     $columns = [
@@ -176,8 +200,51 @@ function run_migrations(): void
             q('ALTER TABLE messages ADD COLUMN ' . $name . ' ' . $definition);
         }
     }
-    set_setting('schema_version', (string) SCHEMA_VERSION);
-    settings_all(true);
+}
+
+/**
+ * v3: otel sıralaması, oda tipleri ve oda fotoğrafları galerisi.
+ * Panelden girilmiş veriyi ezmez: odası olan otele oda eklemez, galeride zaten bulunan görseli yinelemez.
+ */
+function migrate_hotel_setup(array $setup): void
+{
+    $ids = array_column(rows('SELECT id, slug FROM hotels'), 'id', 'slug');
+
+    $position = 0;
+    foreach ($setup['order'] as $slug) {
+        if (isset($ids[$slug])) {
+            q('UPDATE hotels SET sort = ? WHERE id = ?', [++$position, $ids[$slug]]);
+        }
+    }
+    $unlisted = array_diff_key($ids, array_flip($setup['order']));
+    if ($unlisted) {
+        $marks = implode(',', array_fill(0, count($unlisted), '?'));
+        foreach (rows("SELECT id FROM hotels WHERE id IN ($marks) ORDER BY sort, id", array_values($unlisted)) as $hotel) {
+            q('UPDATE hotels SET sort = ? WHERE id = ?', [++$position, $hotel['id']]);
+        }
+    }
+
+    foreach ($setup['rooms'] as $slug => $rooms) {
+        if (!isset($ids[$slug]) || (int) val('SELECT COUNT(*) FROM hotel_rooms WHERE hotel_id = ?', [$ids[$slug]]) > 0) {
+            continue;
+        }
+        foreach ($rooms as $i => [$name, $details]) {
+            q('INSERT INTO hotel_rooms (hotel_id, name, details, sort) VALUES (?, ?, ?, ?)', [$ids[$slug], $name, $details, $i + 1]);
+        }
+    }
+
+    foreach ($ids as $slug => $hotelId) {
+        $files = glob(ROOT_DIR . '/uploads/oteller/galeri/' . $slug . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [];
+        sort($files);
+        $have = array_column(rows('SELECT image FROM hotel_images WHERE hotel_id = ?', [$hotelId]), 'image');
+        $next = (int) val('SELECT COALESCE(MAX(sort), 0) FROM hotel_images WHERE hotel_id = ?', [$hotelId]);
+        foreach ($files as $file) {
+            $path = 'uploads/oteller/galeri/' . $slug . '/' . basename($file);
+            if (!in_array($path, $have, true)) {
+                q('INSERT INTO hotel_images (hotel_id, image, sort) VALUES (?, ?, ?)', [$hotelId, $path, ++$next]);
+            }
+        }
+    }
 }
 
 /* ───────────── Çıktı yardımcıları ───────────── */
