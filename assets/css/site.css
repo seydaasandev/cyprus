@@ -160,7 +160,7 @@ a:hover .link-arrow .ic, .link-arrow:hover .ic { transform: translateX(6px); }
 .topbar a:hover { color: var(--c-accent); }
 .topbar__link { display: inline-flex; align-items: center; gap: 7px; }
 .topbar__social { display: inline-flex; gap: 12px; padding-inline: 16px; border-inline: 1px solid rgba(255,255,255,.18); }
-.topbar__btn { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); font-weight: 600; transition: background .3s, color .3s, border-color .3s; }
+.topbar__btn { display: inline-flex; align-items: center; gap: 7px; padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); font-size: .95rem; font-weight: 600; transition: background .3s, color .3s, border-color .3s; }
 .topbar__btn:hover { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-dark) !important; }
 .topbar__btn--fill { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-dark) !important; }
 .topbar__btn--fill:hover { background: #fff; border-color: #fff; }
@@ -243,7 +243,7 @@ a:hover .link-arrow .ic, .link-arrow:hover .ic { transform: translateX(6px); }
 /* ---------- Hero (video / görsel slayt) ---------- */
 .hero { position: relative; height: var(--hero-h); min-height: 640px; color: #fff; overflow: hidden; background: var(--c-dark); }
 .hero__slides, .hero__slide, .hero__media, .hero__shade { position: absolute; inset: 0; }
-.hero__slide { opacity: 0; visibility: hidden; transition: opacity 1.2s ease, visibility 1.2s; display: flex; align-items: center; }
+.hero__slide { opacity: 0; visibility: hidden; transition: opacity 2.5s ease, visibility 2.5s; display: flex; align-items: center; }
 .hero__slide.is-active { opacity: 1; visibility: visible; z-index: 1; }
 .hero__media img, .hero__media video { width: 100%; height: 100%; object-fit: cover; }
 .hero__media img { transform: scale(1.02); }

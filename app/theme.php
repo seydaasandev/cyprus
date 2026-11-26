@@ -37,7 +37,7 @@ function theme_defaults(): array
         'anim_style' => 'fade-up',
         'preloader' => '1',
         'hero_height' => '100',
-        'hero_autoplay' => '7',
+        'hero_autoplay' => '12',
         'tr_enabled' => '1',
         'tr_langs' => 'tr,en,de,ru,ar,fr,el,iw',
         'float_whatsapp' => '1',

@@ -367,10 +367,16 @@
     var langs = window.CT_LANGS;
     if (!langs || langs.length < 2) { return; }
     var source = 'tr';
+    var DEFAULT_LANG = 'en'; // Varsayılan dil: İngilizce
     function readCookie() {
       var m = doc.cookie.match(/(?:^|;\s*)googtrans=([^;]+)/);
-      var v = m ? decodeURIComponent(m[1]).split('/')[2] : source;
-      return langs.indexOf(v) > -1 ? v : source;
+      if (!m) {
+        // Çerez yok: kullanıcı kaynak dili (Türkçe) açıkça seçtiyse hatırla
+        try { if (localStorage.getItem('ct_lang') === source) { return source; } } catch (e) {}
+        return DEFAULT_LANG;
+      }
+      var v = decodeURIComponent(m[1]).split('/')[2];
+      return langs.indexOf(v) > -1 ? v : DEFAULT_LANG;
     }
     function writeCookie(lang) {
       var host = location.hostname;
@@ -381,6 +387,11 @@
         var base = 'googtrans=' + (lang === source ? '' : '/' + source + '/' + lang) + ';path=/' + (d ? ';domain=' + d : '');
         doc.cookie = base + (lang === source ? ';expires=Thu, 01 Jan 1970 00:00:00 GMT' : '');
       });
+      // Kaynak dil (TR) seçimini localStorage'a kaydet/sil
+      try {
+        if (lang === source) { localStorage.setItem('ct_lang', source); }
+        else { localStorage.removeItem('ct_lang'); }
+      } catch (e) {}
     }
     var current = readCookie();
     $$('[data-lang-current]').forEach(function (el) { el.textContent = (current === 'iw' ? 'he' : current).toUpperCase().slice(0, 2); });

@@ -150,7 +150,7 @@ function set_setting(string $key, string $value): void
 }
 
 /* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 const MIGRATION_LOCK = 'cyprus_schema_migration';
 const MIGRATION_LOCK_WAIT_SECONDS = 15;
 
@@ -181,6 +181,9 @@ function run_migrations(): void
         }
         if ($version < 5) {
             migrate_gallery_captions(require APP_DIR . '/data/gallery_captions_v5.php');
+        }
+        if ($version < 6) {
+            migrate_data_v6();
         }
         set_setting('schema_version', (string) SCHEMA_VERSION);
         settings_all(true);
@@ -303,6 +306,58 @@ function migrate_gallery_captions(array $captions): void
             q("UPDATE hotel_images SET caption = ? WHERE image = ? AND caption = ''", [$caption, 'uploads/oteller/galeri/' . $slug . '/' . $file]);
         }
     }
+}
+
+/** v6: Otel sıralaması, Arkin İskele oda ismi, Salamis Standard Villa, hero autoplay. */
+function migrate_data_v6(): void
+{
+    // Otel sıralama güncelleme (kullanıcı tarafından belirlenen sıra)
+    $order = [
+        'concorde-luxury-hotel'          => 10,
+        'elexus-hotel'                   => 20,
+        'limak-cyprus-deluxe-hotel-single' => 30,
+        'arkin-iskele-hotel'             => 40,
+        'acapulco-hotel'                 => 50,
+        'salamis-hotel'                  => 60,
+        'kaya-artemis-hotel'             => 70,
+        'concorde-aria-hotel-casino'     => 80,
+        'kaya-palazzo-hotel-kyrenia'     => 90,
+        'lords-palace-hotel-kyrenia'     => 100,
+        'lords-palace-lagoon-hotel'      => 110,
+        'cratos-hotel'                   => 120,
+        'vuni-palace-hotel'              => 130,
+        'merit-park-hotel'               => 140,
+        'merit-royal-premium-hotel'      => 150,
+        'merit-royal-diamond-hotel'      => 160,
+        'grand-sapphire-hotel'           => 170,
+    ];
+    foreach ($order as $slug => $sort) {
+        q('UPDATE hotels SET sort = ? WHERE slug = ?', [$sort, $slug]);
+    }
+
+    // Arkin İskele oda tipi isim değişikliği: Deluxe Side Sea → Standard Side Sea
+    q("UPDATE hotel_rooms SET name = 'Standard Side Sea' WHERE name = 'Deluxe Side Sea' AND hotel_id = (SELECT id FROM hotels WHERE slug = 'arkin-iskele-hotel')");
+
+    // Salamis'e Standard Villa oda ekleme (yoksa)
+    $exists = val(
+        "SELECT COUNT(*) FROM hotel_rooms WHERE name = 'Standard Villa' AND hotel_id = (SELECT id FROM hotels WHERE slug = 'salamis-hotel')"
+    );
+    if ((int) $exists === 0) {
+        $hotelId = val("SELECT id FROM hotels WHERE slug = 'salamis-hotel'");
+        $maxSort = val('SELECT COALESCE(MAX(sort),0) FROM hotel_rooms WHERE hotel_id = ?', [(int) $hotelId]);
+        q(
+            "INSERT INTO hotel_rooms (hotel_id, name, details, price, note, sort) VALUES (?, ?, ?, '', '', ?)",
+            [
+                (int) $hotelId,
+                'Standard Villa',
+                '36 m² – 2 separate bedrooms: 1 French bed, 1 sofa bed, and 1 French or 2 twin beds. Max capacity: 4+1',
+                (int) $maxSort + 1,
+            ]
+        );
+    }
+
+    // Hero slayt geçiş süresi varsayılanını güncelle (zaten 7 ise 12'ye çek)
+    q("UPDATE settings SET v = '12' WHERE k = 'hero_autoplay' AND v = '7'");
 }
 
 /** Otel sayfalarındaki "Rezervasyon Yap" düğmesi ve rezervasyon formu açık mı? (Panelden açılır.) */
