@@ -150,7 +150,7 @@ function set_setting(string $key, string $value): void
 }
 
 /* ───────────── Veritabanı sürüm yükseltmeleri ───────────── */
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 const MIGRATION_LOCK = 'cyprus_schema_migration';
 const MIGRATION_LOCK_WAIT_SECONDS = 15;
 
@@ -184,6 +184,9 @@ function run_migrations(): void
         }
         if ($version < 6) {
             migrate_data_v6();
+        }
+        if ($version < 7) {
+            migrate_data_v7();
         }
         set_setting('schema_version', (string) SCHEMA_VERSION);
         settings_all(true);
@@ -358,6 +361,27 @@ function migrate_data_v6(): void
 
     // Hero slayt geçiş süresi varsayılanını güncelle (zaten 7 ise 12'ye çek)
     q("UPDATE settings SET v = '12' WHERE k = 'hero_autoplay' AND v = '7'");
+}
+
+/**
+ * v7: Salamis "Standard Villa" fotoğrafları galeriye eklenir; Arkin İskele'deki fotoğraf başlığı
+ * yeni oda adına ("Standard Side Sea") çekilir. Var olan kayıtlara dokunmaz, tekrar çalışması zararsızdır.
+ */
+function migrate_data_v7(): void
+{
+    $salamisId = (int) val("SELECT id FROM hotels WHERE slug = 'salamis-hotel'");
+    if ($salamisId > 0) {
+        $dir = 'uploads/oteller/galeri/salamis-hotel/';
+        $have = array_column(rows('SELECT image FROM hotel_images WHERE hotel_id = ?', [$salamisId]), 'image');
+        $next = (int) val('SELECT COALESCE(MAX(sort), 0) FROM hotel_images WHERE hotel_id = ?', [$salamisId]);
+        foreach (['09-salamis-standard-villa.webp', '10-salamis-standard-villa-2.webp', '11-salamis-standard-villa-3.webp'] as $file) {
+            $path = $dir . $file;
+            if (!in_array($path, $have, true) && is_file(ROOT_DIR . '/' . $path)) {
+                q('INSERT INTO hotel_images (hotel_id, image, sort, caption) VALUES (?, ?, ?, ?)', [$salamisId, $path, ++$next, 'Standard Villa']);
+            }
+        }
+    }
+    q("UPDATE hotel_images SET caption = 'Standard Side Sea' WHERE caption = 'Deluxe Side Sea' AND hotel_id = (SELECT id FROM hotels WHERE slug = 'arkin-iskele-hotel')");
 }
 
 /** Otel sayfalarındaki "Rezervasyon Yap" düğmesi ve rezervasyon formu açık mı? (Panelden açılır.) */

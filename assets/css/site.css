@@ -155,7 +155,7 @@ a:hover .link-arrow .ic, .link-arrow:hover .ic { transform: translateX(6px); }
 .lang__list { z-index: 20; }
 .topbar__in { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 42px; }
 .topbar__text { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .9; }
-.topbar__right { display: flex; align-items: center; gap: 20px; flex: none; }
+.topbar__right { display: flex; align-items: center; gap: 20px; flex: none; margin-left: auto; }
 .topbar a { color: inherit; }
 .topbar a:hover { color: var(--c-accent); }
 .topbar__link { display: inline-flex; align-items: center; gap: 7px; }
@@ -574,6 +574,14 @@ body:not(.hdr-over) .page-hero { padding-top: clamp(80px, 9vw, 120px); }
 .room:hover { transform: translateY(-4px); border-color: transparent; box-shadow: 0 26px 54px -32px rgba(var(--c-primary-rgb), .65); }
 .room__icon { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 16px; background: rgba(var(--c-secondary-rgb), .1); color: var(--c-secondary); transition: .4s; }
 .room:hover .room__icon { background: var(--c-accent); color: var(--c-dark); }
+/* Oda fotoğrafı: tıklanınca yalnızca o odanın fotoğrafları ışık kutusunda açılır. */
+.room__media { position: relative; width: 168px; aspect-ratio: 3 / 2; border-radius: 12px; overflow: hidden; background: var(--c-soft); }
+.room__media a { position: absolute; inset: 0; display: block; }
+.room__media img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.8,.2,1); }
+.room:hover .room__media img { transform: scale(1.07); }
+.room__zoom { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; background: rgba(var(--c-dark-rgb), .74); color: #fff; font-size: .72rem; font-weight: 600; line-height: 1; pointer-events: none; }
+.rooms__list--media .room { padding: 14px 24px 14px 14px; }
+.rooms__list--media .room__icon { width: 168px; height: auto; aspect-ratio: 3 / 2; border-radius: 12px; }
 .room__info h3 { font-size: 1.15rem; margin: 0; }
 .room__info p { margin: 4px 0 0; color: var(--c-muted); font-size: .92rem; line-height: 1.55; }
 .room__price { text-align: right; display: grid; gap: 2px; }
@@ -590,13 +598,24 @@ body:not(.hdr-over) .page-hero { padding-top: clamp(80px, 9vw, 120px); }
 .reserve-note { display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; border-radius: var(--radius-sm); background: var(--c-soft); color: var(--c-muted); font-size: .9rem; }
 .reserve-note .ic { color: var(--c-secondary); margin-top: 3px; }
 [hidden] { display: none !important; }
-.gallery { display: grid; gap: 12px; }
-.gallery__main { display: block; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16 / 10; box-shadow: 0 40px 80px -44px rgba(var(--c-dark-rgb), .55); }
-.gallery__main img, .gallery__thumbs img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.8,.2,1); }
-.gallery a:hover img { transform: scale(1.06); }
-.gallery__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
-.gallery__thumbs a { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: var(--radius-sm); overflow: hidden; }
-.gallery__cap { position: absolute; inset: auto 0 0 0; padding: 14px 8px 6px; font-size: .68rem; font-weight: 600; line-height: 1.25; color: #fff; text-align: center; background: linear-gradient(to top, rgba(var(--c-dark-rgb), .88), rgba(var(--c-dark-rgb), 0)); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; pointer-events: none; }
+/* Galeri: tek ana fotoğraf + tek sıra küçük resim (fazlası "+N"); 2–3 fotoğrafta yan yana düzen. */
+.gallery { display: grid; gap: 10px; }
+.gallery a { position: relative; display: block; overflow: hidden; background: var(--c-soft); }
+.gallery img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.2,.8,.2,1); }
+.gallery a:hover img { transform: scale(1.05); }
+.gallery__main { border-radius: var(--radius); aspect-ratio: 16 / 9; box-shadow: 0 40px 80px -44px rgba(var(--c-dark-rgb), .55); }
+.gallery__thumbs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; height: clamp(84px, 9.5vw, 134px); }
+.gallery__thumbs a { border-radius: var(--radius-sm); }
+.gallery--split { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.gallery--split .gallery__main { aspect-ratio: 3 / 2; }
+.gallery--split .gallery__thumbs { grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); height: auto; }
+.gallery__count { position: absolute; left: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 999px; background: rgba(255,255,255,.94); color: var(--c-dark); font-size: .82rem; font-weight: 600; line-height: 1; box-shadow: 0 12px 30px -12px rgba(0,0,0,.45); pointer-events: none; transition: background .3s; }
+.gallery__main:hover .gallery__count { background: var(--c-accent); }
+.gallery__cap { position: absolute; inset: auto 0 0 0; padding: 24px 12px 9px; font-size: .74rem; font-weight: 600; line-height: 1.25; color: #fff; background: linear-gradient(to top, rgba(var(--c-dark-rgb), .86), rgba(var(--c-dark-rgb), 0)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.gallery__more { position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; text-align: center; color: #fff; background: rgba(var(--c-dark-rgb), .58); pointer-events: none; transition: background .35s; }
+.gallery a:hover .gallery__more { background: rgba(var(--c-dark-rgb), .74); }
+.gallery__more strong { font-family: var(--f-heading); font-size: clamp(1.35rem, 2.2vw, 1.95rem); line-height: 1; }
+.gallery__more small { font-size: .68rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
 
 /* ---------- Zengin içerik ---------- */
 .prose { color: var(--c-text); min-width: 0; }
@@ -662,6 +681,8 @@ body:not(.hdr-over) .page-hero { padding-top: clamp(80px, 9vw, 120px); }
 .lightbox__prev { left: 22px; top: 50%; margin-top: -26px; }
 .lightbox__next { right: 22px; top: 50%; margin-top: -26px; }
 .lightbox.is-single .lightbox__nav { display: none; }
+.lightbox__count { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.82); font-size: .82rem; font-weight: 600; letter-spacing: .14em; }
+.lightbox.is-single .lightbox__count { display: none; }
 [data-lb] { cursor: zoom-in; }
 
 /* Google Çeviri çubuğunu gizle (dil seçimi kendi menümüzden yapılır) */
@@ -729,7 +750,7 @@ font[style] { background: transparent !important; box-shadow: none !important; }
   .hero__content { padding-bottom: 130px; }
   .navbar__in { min-height: 76px; }
   .brand img { height: calc(var(--logo-h) * .8); }
-  .topbar__btn { padding: 4px 10px; font-size: .74rem; }
+  .topbar__btn { padding: 5px 11px; font-size: .84rem; }
   .topbar__right { gap: 12px; }
   .topbar__link span { display: none; }
   .topbar__in { justify-content: space-between; }
@@ -741,12 +762,31 @@ font[style] { background: transparent !important; box-shadow: none !important; }
   .room { grid-template-columns: auto minmax(0, 1fr); }
   .room__price { text-align: left; grid-column: 1 / -1; }
   .room .btn { grid-column: 1 / -1; }
+  .rooms__list--media .room { padding: 12px 14px 12px 12px; gap: 14px; }
+  .room__media, .rooms__list--media .room__icon { width: 104px; border-radius: 10px; }
+  .room__zoom { right: 6px; bottom: 6px; padding: 4px 7px; font-size: .68rem; }
+  .gallery, .gallery__thumbs { gap: 6px; }
+  .gallery__thumbs { height: 21vw; }
+  .gallery--split { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+  .gallery__cap { display: none; }
+  .gallery__count { left: 10px; bottom: 10px; padding: 6px 11px; font-size: .74rem; }
+  .gallery__more small { font-size: .58rem; letter-spacing: .1em; }
   .reserve-hotel { grid-template-columns: 96px minmax(0, 1fr); }
   .reserve-hotel img { width: 96px; height: 80px; }
   .lightbox__prev { left: 8px; }
   .lightbox__next { right: 8px; }
   .form .btn { justify-self: stretch; }
   .page-hero { padding-top: 160px; }
+}
+/* Küçük telefonlar: üst çubuktaki Talep Formu / Kurumsal Giriş yazısı büyük kalsın, taşmasın. */
+@media (max-width: 420px) {
+  .topbar__right { gap: 8px; }
+  .topbar__btn { padding: 5px 10px; }
+  .topbar__btn .ic { display: none; }
+}
+@media (max-width: 360px) {
+  .topbar__btn { padding: 4px 9px; font-size: .78rem; }
+  .lang__btn .ic:first-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

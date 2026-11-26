@@ -78,6 +78,7 @@ $year = date('Y');
 <div class="lightbox" id="lightbox" aria-hidden="true">
   <button type="button" class="lightbox__close" aria-label="Kapat" data-lb-close><?= icon('close', 26) ?></button>
   <button type="button" class="lightbox__nav lightbox__prev" aria-label="Önceki" data-lb-prev><?= icon('arrow-left', 24) ?></button>
+  <span class="lightbox__count" data-lb-count aria-live="polite"></span>
   <figure><img alt=""><figcaption></figcaption></figure>
   <button type="button" class="lightbox__nav lightbox__next" aria-label="Sonraki" data-lb-next><?= icon('arrow-right', 24) ?></button>
 </div>

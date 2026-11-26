@@ -316,6 +316,9 @@
     if (!box) { return; }
     var img = $('img', box);
     var cap = $('figcaption', box);
+    var count = $('[data-lb-count]', box);
+    var SWIPE_MIN_PX = 50;
+    var touchX = null;
     var list = [];
     var pos = 0;
     // Makale içi görseller de büyütülebilsin.
@@ -326,6 +329,11 @@
       pos = (i + list.length) % list.length;
       img.src = list[pos].src;
       cap.textContent = list[pos].caption || '';
+      if (count) { count.textContent = (pos + 1) + ' / ' + list.length; }
+      // Komşu fotoğrafları önceden yükle; ileri/geri geçiş beklemesiz olsun.
+      [pos + 1, pos - 1].forEach(function (n) {
+        if (list.length > 1) { (new Image()).src = list[(n + list.length) % list.length].src; }
+      });
     }
     function open(group, start) {
       list = group;
@@ -354,6 +362,14 @@
     $('[data-lb-prev]', box).addEventListener('click', function () { show(pos - 1); });
     $('[data-lb-next]', box).addEventListener('click', function () { show(pos + 1); });
     box.addEventListener('click', function (e) { if (e.target === box) { close(); } });
+    // Dokunmatik ekranda sağa/sola kaydırarak gezinme.
+    box.addEventListener('touchstart', function (e) { touchX = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+    box.addEventListener('touchend', function (e) {
+      if (touchX === null || list.length < 2) { return; }
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) >= SWIPE_MIN_PX) { show(dx < 0 ? pos + 1 : pos - 1); }
+    }, { passive: true });
     doc.addEventListener('keydown', function (e) {
       if (!box.classList.contains('is-open')) { return; }
       if (e.key === 'Escape') { close(); }

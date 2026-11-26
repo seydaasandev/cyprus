@@ -2,10 +2,37 @@
 /** Otel detay sayfası. Satış yok: bilgi + talep formu yönlendirmesi. */
 $features = lines($hotel['features']);
 // Ana görsel + galeri; galeri fotoğraflarının başlığı (oda adı) ışık kutusunda ve küçük resimde gösterilir.
+$photos = array_values(array_filter($gallery, static fn(array $g): bool => $g['image'] !== ''));
 $shots = array_merge(
     $hotel['image'] !== '' ? [['image' => $hotel['image'], 'caption' => '']] : [],
-    array_values(array_filter($gallery, static fn(array $g): bool => $g['image'] !== ''))
+    $photos
 );
+// Galeri: tek ana fotoğraf + tek sıra küçük resim; fazlası "+N" ile ışık kutusunda gezilir.
+$thumbMax = 4;
+$thumbs = array_slice($shots, 1, $thumbMax);
+$extraShots = array_slice($shots, 1 + $thumbMax);
+$galleryLayout = match (true) {
+    count($shots) === 1 => 'single',
+    count($shots) <= 3 => 'split',
+    default => 'strip',
+};
+$photoLabel = setting('label_photos', 'Fotoğraf');
+$allPhotosLabel = setting('label_all_photos', 'Tümünü Gör');
+// Oda fotoğrafları: panelde başlığı (oda adı) odayla eşleşen galeri görselleri.
+// Önce birebir eşleşme; yoksa "– …" eki ve "Rooms/Room" farkı yok sayılır.
+$roomKey = static function (string $name): string {
+    $base = preg_split('/\s+[–—-]\s+/u', mb_strtolower(trim($name)))[0] ?? '';
+    return preg_replace('/\brooms\b/u', 'room', preg_replace('/\s+/u', ' ', trim($base)));
+};
+$roomPhotos = [];
+foreach ($rooms as $room) {
+    $exact = array_values(array_filter($photos, static fn(array $g): bool => ($g['caption'] ?? '') === $room['name']));
+    $roomPhotos[$room['id']] = $exact ?: array_values(array_filter(
+        $photos,
+        static fn(array $g): bool => ($g['caption'] ?? '') !== '' && $roomKey($g['caption']) === $roomKey($room['name'])
+    ));
+}
+$roomsHaveMedia = (bool) array_filter($roomPhotos);
 $requestUrl = url('talep-formu') . '?otel=' . rawurlencode($hotel['name']);
 $reserveUrl = url('rezervasyon') . '?otel=' . rawurlencode($hotel['slug']);
 $bookLabel = setting('label_book', 'Rezervasyon Yap');
@@ -16,15 +43,25 @@ $canReserve = reservations_enabled();
   <div class="container hotel__grid">
     <div class="hotel__main">
       <?php if ($shots): ?>
-      <div class="gallery" data-gallery data-reveal>
-        <a class="gallery__main" href="<?= e(media($shots[0]['image'])) ?>" data-lb data-caption="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>"><img src="<?= e(thumb($shots[0]['image'], 1200)) ?>" alt="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>"></a>
-        <?php if (count($shots) > 1): ?>
+      <div class="gallery gallery--<?= $galleryLayout ?>" data-gallery data-reveal>
+        <a class="gallery__main" href="<?= e(media($shots[0]['image'])) ?>" data-lb data-caption="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>">
+          <img src="<?= e(thumb($shots[0]['image'], 1200)) ?>" alt="<?= e($shots[0]['caption'] ?: $hotel['name']) ?>">
+          <?php if (count($shots) > 1): ?><span class="gallery__count"><?= icon('image', 16) ?><?= count($shots) ?> <?= e($photoLabel) ?></span><?php endif; ?>
+        </a>
+        <?php if ($thumbs): ?>
         <div class="gallery__thumbs">
-          <?php foreach (array_slice($shots, 1) as $shot): $cap = (string) ($shot['caption'] ?? ''); ?>
-          <a href="<?= e(media($shot['image'])) ?>" data-lb data-caption="<?= e($cap !== '' ? $cap : $hotel['name']) ?>"<?= $cap !== '' ? ' title="' . e($cap) . '"' : '' ?>><img src="<?= e(thumb($shot['image'], 400)) ?>" alt="<?= e($cap !== '' ? $hotel['name'] . ' – ' . $cap : $hotel['name']) ?>" loading="lazy"><?php if ($cap !== ''): ?><span class="gallery__cap"><?= e($cap) ?></span><?php endif; ?></a>
+          <?php foreach ($thumbs as $i => $shot): $cap = (string) ($shot['caption'] ?? ''); $isMore = $extraShots && $i === count($thumbs) - 1; ?>
+          <a href="<?= e(media($shot['image'])) ?>" data-lb data-caption="<?= e($cap !== '' ? $cap : $hotel['name']) ?>"<?= $cap !== '' ? ' title="' . e($cap) . '"' : '' ?>>
+            <img src="<?= e(thumb($shot['image'], 640)) ?>" alt="<?= e($cap !== '' ? $hotel['name'] . ' – ' . $cap : $hotel['name']) ?>" loading="lazy">
+            <?php if ($isMore): ?><span class="gallery__more"><strong>+<?= count($extraShots) ?></strong><small><?= e($allPhotosLabel) ?></small></span>
+            <?php elseif ($cap !== ''): ?><span class="gallery__cap"><?= e($cap) ?></span><?php endif; ?>
+          </a>
           <?php endforeach; ?>
         </div>
         <?php endif; ?>
+        <?php foreach ($extraShots as $shot): $cap = (string) ($shot['caption'] ?? ''); ?>
+        <a href="<?= e(media($shot['image'])) ?>" data-lb data-caption="<?= e($cap !== '' ? $cap : $hotel['name']) ?>" hidden></a>
+        <?php endforeach; ?>
       </div>
       <?php endif; ?>
 
@@ -43,10 +80,23 @@ $canReserve = reservations_enabled();
       <?php if ($rooms): ?>
       <div class="rooms" id="odalar" data-reveal>
         <h2><?= e(setting('label_rooms', 'Oda Seçenekleri')) ?></h2>
-        <ul class="rooms__list">
-          <?php foreach ($rooms as $room): ?>
+        <ul class="rooms__list<?= $roomsHaveMedia ? ' rooms__list--media' : '' ?>">
+          <?php foreach ($rooms as $room): $pics = $roomPhotos[$room['id']] ?? []; ?>
           <li class="room">
+            <?php if ($pics): ?>
+            <div class="room__media" data-gallery>
+              <?php foreach ($pics as $p => $pic): ?>
+              <a href="<?= e(media($pic['image'])) ?>" data-lb data-caption="<?= e($room['name']) ?>"<?= $p > 0 ? ' hidden' : '' ?>>
+                <?php if ($p === 0): ?>
+                <img src="<?= e(thumb($pic['image'], 480)) ?>" alt="<?= e($hotel['name'] . ' – ' . $room['name']) ?>" loading="lazy">
+                <span class="room__zoom"><?= count($pics) > 1 ? icon('image', 13) . count($pics) : icon('search', 13) ?></span>
+                <?php endif; ?>
+              </a>
+              <?php endforeach; ?>
+            </div>
+            <?php else: ?>
             <span class="room__icon"><?= icon('bed', 22) ?></span>
+            <?php endif; ?>
             <div class="room__info">
               <h3><?= e($room['name']) ?></h3>
               <?php if ($room['details'] !== ''): ?><p><?= e($room['details']) ?></p><?php endif; ?>
