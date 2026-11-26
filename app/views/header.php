@@ -32,6 +32,19 @@ $email = setting('email');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.documentElement.className += ' js';</script>
+<script>/* Varsayılan dil: İngilizce — çerez yoksa ilk ziyarette set edip yenile */
+!function(){
+  if(!/googtrans=/.test(document.cookie)){
+    var p;try{p=localStorage.getItem('ct_lang')}catch(e){}
+    if(p!=='tr'){
+      var h=location.hostname,c='googtrans=/tr/en;path=/';
+      document.cookie=c;document.cookie=c+';domain='+h;
+      var pts=h.split('.');if(pts.length>1){document.cookie=c+';domain=.'+pts.slice(-2).join('.');}
+      location.reload();
+    }
+  }
+}();
+</script>
 <title><?= e($fullTitle) ?></title>
 <?php if ($metaDesc !== ''): ?><meta name="description" content="<?= e(excerpt($metaDesc, 300)) ?>"><?php endif; ?>
 <?php if (!empty($meta['noindex'])): ?><meta name="robots" content="noindex"><?php endif; ?>
